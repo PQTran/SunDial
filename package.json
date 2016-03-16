@@ -1,0 +1,15 @@
+{
+  "title": "SunDial",
+  "name": "pqtran",
+  "version": "0.0.1",
+  "description": "An add-on for ease of recording tasks and time in a non-obtrusive manner",
+  "main": "index.js",
+  "author": "Paul Tran",
+  "engines": {
+    "firefox": ">=38.0a1"
+  },
+  "license": "MIT",
+  "keywords": [
+    "jetpack"
+  ]
+}
