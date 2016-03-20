@@ -1,0 +1,73 @@
+<html>
+<head>
+  <link rel="stylesheet" href="data/kendo.common-material.min.css">
+  <link rel="stylesheet" href="data/kendo.material.min.css">
+  <link rel="stylesheet" href="data/prototype.css">
+
+  <script src="data/jquery.min.js"></script>
+  <script src="data/angular.min.js"></script>
+  <script src="data/kendo.all.min.js"></script>
+  <script src="data/prototype.js"></script>
+
+  <style>
+    .k-draghandle:hover {
+      display: none;
+    }
+
+    .k-state-disabled,
+    .k-state-disabled > .k-slider-wrap {
+      opacity: 1;
+    }
+
+    .k-panel .k-item .k-link {
+      line-height: 2.25em;
+    }
+
+    .k-slider-horizontal .k-draghandle {
+      height: 3px;
+      top: -3px;
+      width: 3px;
+    }
+
+    div.k-slider-track {
+      background-color: orange;
+    }
+
+    .k-slider-horizontal {
+      height: 10px;
+      top: 17px;
+      width: 90px;
+    }
+
+    .k-link.k-state-selected {
+      background-color: #ebebeb;
+    }
+    </style>
+</head>
+<body ng-app="prototypeApp" ng-controller="prototypeController">
+
+<!-- UI -->
+<div id="panel" style="height:250px; width:350px;">
+  <ul kendo-panel-bar="panelBar"></ul>
+</div>
+
+<!-- Template scripts -->
+<script type="text/x-kendo-template" id="category-template">
+  <span>#:Category#</span>
+  <span id="category-time">#:TotalTime#</span>
+</script>
+
+<script type="text/x-kendo-template" id="task-template">
+  <span>- #:Title#</span>
+  <span id="task-time">
+    <div style="height:24px;">#:Time#</div>
+    <div class="task-time-slider" id="#:SliderId#"></div>
+  </span>
+</script>
+
+<script type="text/x-kendo-template" id="slider-template">
+   <div kendo-slider data-role="slider" max="100" tick-placement="'none'" data-show-buttons="false" tool-tip-enabled="false" value="#:Value#" disabled></div>
+</script>
+
+</body>
+</html>

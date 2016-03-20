@@ -1,0 +1,35 @@
+// User defined id and classes
+
+body {
+  margin: 0;
+}
+
+#panel {
+  background-color: gray;
+  height: 250px;
+  overflow-y: scroll;
+  width: 350px;
+}
+
+#category-time {
+  box-shadow: 0px 0px 0px white inset, 0px -2px 0px rgb(63, 81, 181) inset;
+  float: right;
+  line-height: 1.5em;
+  padding-top: 1em;
+  text-align: center;
+  width: 90px;
+}
+
+#task-time {
+  float: right;
+  text-align: center;
+  width: 90px;
+}
+
+.task-time-slider {
+  position: relative;
+  top: -18px;
+}
+
+
+
