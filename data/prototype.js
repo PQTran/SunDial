@@ -39,11 +39,40 @@ app.controller('prototypeController', [ '$scope', function($scope) {
     }
   });
 
+  $('#panel').kendoTooltip({
+    position: 'top',
+    width: 180,
+    filter: '#task-title, #category-title',
+    show: function (e) {
+      if (this.content.text() != '') {
+        this.popup.wrapper.width('auto');
+        $('[role="tooltip"]').css('visibility', 'visible');
+      }
+    },
+    hide: function () {
+      $('[role="tooltip"]').css('visibility', 'hidden'); 
+    },
+    content: function (e) {
+      var element = e.target[0];
+
+      if (element.offsetWidth < element.scrollWidth && element.id == 'category-title') {
+        return e.target.text();
+      }
+      if (element.offsetWidth < element.scrollWidth && element.id == 'task-title') {
+        return e.target.text().substring(2);
+      }
+      else {
+        return '';
+      }
+    }
+  });
+
+
   function insertData(categoryItem) {
     var baseId = categoryItem.title.split(' ').join('');
 
     var categoryTemplate = kendo.template($('#category-template').html());
-    var categoryTemplateData = {Category: categoryItem.title, TotalTime: categoryItem.time};
+    var categoryTemplateData = {CategoryTitle: categoryItem.title, CategoryTime: categoryItem.time};
     var resultCategoryHtml = categoryTemplate(categoryTemplateData);
 
     var taskItems = generateTaskItems(baseId, categoryItem);
@@ -61,7 +90,7 @@ app.controller('prototypeController', [ '$scope', function($scope) {
       var entry = entries[i];
       
       var taskTemplate = kendo.template($("#task-template").html());
-      var taskTemplateData = {Title: entry.title, Time: entry.time, SliderId: baseId + i};
+      var taskTemplateData = {TaskTitle: entry.title, TaskTime: entry.time, SliderId: baseId + i};
       var resultTaskHtml = taskTemplate(taskTemplateData);
 
       var resultTaskItem = {text: resultTaskHtml, encoded: false};

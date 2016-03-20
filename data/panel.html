@@ -1,95 +1,98 @@
 <html>
 <head>
-    <link rel="stylesheet" href="kendo.common-material.min.css" type="text/css" />
-    <link rel="stylesheet" href="kendo.material.min.css" type="text/css" />
-    <style>
-      div#panel {
-        background-color: gray;
-        height: 250px;
-        width: 350px;
-        overflow-y: scroll;
-      }
-      .k-draghandle:hover {
-        display: none;
-      }
-      .k-slider .k-icon,
-      .k-slider .k-tick,
-      .k-slider-track {
-        cursor: inherit;
-      }
-      div.k-slider > div.k-slider-wrap > div.k-slider-track {
-        background-color: white;
-      }
-      .k-state-disabled,
-      .k-state-disabled > .k-slider-wrap {
-        opacity: 1;
-      }
-      #categoryPanelTime {
-        float: right;
-        width: 90px;
-        text-align: center;
-        box-shadow: 0px 0px 0px white inset, 0px -2px 0px rgb(63, 81, 181) inset;
-        display: block;
-        line-height: 1.5em;
-        padding-top: 1em;
-      }
-      .k-state-hover {
-        color: #3f51b5 !important;
-      }
+  <link rel="stylesheet" href="kendo.common-material.min.css">
+  <link rel="stylesheet" href="kendo.material.min.css">
+  <link rel="stylesheet" href="panel.css">
 
-      ul.k-panel > li.k-item > span.k-link {
-        line-height: 2.25em;
-      }
-      #categoryChildPanelTime {
-        float: right;
-        width: 90px;
-        text-align: center;
-//        box-shadow: 0px 0px 0px white inset, 0px -2px 0px rgb(63, 81, 181) inset;
-//        display: block;
-//        line-height: 1.5em;
-      }
-      .k-draghandle {
-        top: -3px !important;
-        width: 3px !important;
-        height: 3px !important;
-      }
-      .timeSlider {
-        position: relative;
-        top: -18px;
-      }
-      .k-slider-horizontal {
-        display: inline-block;
-        float: right;
-        width: 90px;
-        height: 10px;
-        top: 17px;
-      }
-      div.k-slider > div.k-slider-wrap > div.k-slider-track {
-        background-color: orange;
-      }
+  <style>
+    body {
+      margin: 0;
+    }
 
+    .k-draghandle:hover {
+      display: none;
+    }
+
+    .k-state-disabled,
+    .k-state-disabled > .k-slider-wrap {
+      opacity: 1;
+    }
+
+    .k-panel .k-item .k-link {
+      line-height: 2.25em;
+    }
+
+    .k-slider-horizontal .k-draghandle {
+      height: 3px;
+      top: -3px;
+      width: 3px;
+    }
+
+    div.k-slider-track {
+      background-color: orange;
+    }
+
+    .k-slider-horizontal {
+      height: 10px;
+      top: 17px;
+      width: 90px;
+    }
+
+    .k-link.k-state-selected {
+      background-color: #ebebeb;
+    }
+
+    #category-title,
+    #task-title {
+      display: inline-block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      width: 180px;
+    }
+
+    td {
+      max-width: 200px;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
+    }
+
+    [role="tooltip"] {
+      visibility: hidden;
+    }
+
+    .k-widget {
+      border-width: 0;
+    }
     </style>
 </head>
-<body style="background-color:red; margin:0;" ng-app="prototypeApp" ng-controller="prototypeController">
+<body ng-app="prototypeApp" ng-controller="prototypeController" style="background-color:red;">
 
 <!-- UI -->
-<div id="panel" style="height:250px; width:350px;">
-  <ul kendo-panel-bar="panelBar" k-options="panelBarOptions"></ul>
+<div id="panel" style="background-color:#fafafa; height:250px; overflow-y:scroll; width:375px;">
+  <ul kendo-panel-bar="panelBar"></ul>
+</div>
+<div style="height:50px; width:375px; background-color:#e5e5e5;">
 </div>
 
 <!-- Template scripts -->
-<script type="text/x-kendo-template" id="categoryPanelTemplate">
-  <span>#:Category#</span><span id="categoryPanelTime">#:Time#</span>
+<script type="text/x-kendo-template" id="category-template">
+  <span id="category-title">#:CategoryTitle#</span>
+  <span id="category-time">#:CategoryTime#</span>
 </script>
-<script type="text/x-kendo-template" id="categoryChildPanelTemplate">
-  <span>- #:Title#</span>
-  <span id="categoryChildPanelTime">
-    <div style="height:24px;">#:Time#</div>
-    <div class="timeSlider" id="#:Id#"></div>
+
+<script type="text/x-kendo-template" id="task-template">
+  <span id="task-title">- #:TaskTitle#</span>
+  <span id="task-time">
+    <div style="height:18px;">#:TaskTime#</div>
+    <div class="task-time-slider" id="#:SliderId#"></div>
   </span>
 </script>
-<script type="text/x-kendo-template" id="sliderTemplate">
+
+<script type="text/x-kendo-template" id="slider-template">
    <div kendo-slider data-role="slider" max="100" tick-placement="'none'" data-show-buttons="false" tool-tip-enabled="false" value="#:Value#" disabled></div>
 </script>
+
 </body>
 </html>

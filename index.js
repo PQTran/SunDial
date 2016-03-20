@@ -39,8 +39,8 @@ function handleChange(state) {
 }
 
 var panel = panels.Panel({
-   width: 350,
-   height: 250,
+   width: 375,
+   height: 300,
    contentURL: "./panel.html",
    contentScriptFile: [ "./jquery.min.js", "./angular.min.js", "./kendo.all.min.js", "./panel.js"],
    contentScriptWhen: "start",

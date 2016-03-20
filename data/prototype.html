@@ -1,15 +1,19 @@
 <html>
 <head>
-  <link rel="stylesheet" href="data/kendo.common-material.min.css">
-  <link rel="stylesheet" href="data/kendo.material.min.css">
-  <link rel="stylesheet" href="data/prototype.css">
+  <link rel="stylesheet" href="kendo.common-material.min.css">
+  <link rel="stylesheet" href="kendo.material.min.css">
+  <link rel="stylesheet" href="prototype.css">
 
-  <script src="data/jquery.min.js"></script>
-  <script src="data/angular.min.js"></script>
-  <script src="data/kendo.all.min.js"></script>
-  <script src="data/prototype.js"></script>
+  <script src="jquery.min.js"></script>
+  <script src="angular.min.js"></script>
+  <script src="kendo.all.min.js"></script>
+  <script src="prototype.js"></script>
 
   <style>
+    body {
+      margin: 0;
+    }
+
     .k-draghandle:hover {
       display: none;
     }
@@ -42,25 +46,47 @@
     .k-link.k-state-selected {
       background-color: #ebebeb;
     }
+
+    #category-title,
+    #task-title {
+      display: inline-block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      width: 180px;
+    }
+
+
+    td {
+      max-width: 200px;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
+    }
+
+    [role="tooltip"] {
+      visibility: hidden;
+    }
+
     </style>
 </head>
 <body ng-app="prototypeApp" ng-controller="prototypeController">
 
 <!-- UI -->
-<div id="panel" style="height:250px; width:350px;">
+<div id="panel" style="background-color:gray; height:250px; overflow-y:scroll; width:350px;">
   <ul kendo-panel-bar="panelBar"></ul>
 </div>
 
 <!-- Template scripts -->
 <script type="text/x-kendo-template" id="category-template">
-  <span>#:Category#</span>
-  <span id="category-time">#:TotalTime#</span>
+  <span id="category-title">#:CategoryTitle#</span>
+  <span id="category-time">#:CategoryTime#</span>
 </script>
 
 <script type="text/x-kendo-template" id="task-template">
-  <span>- #:Title#</span>
+  <span id="task-title">- #:TaskTitle#</span>
   <span id="task-time">
-    <div style="height:24px;">#:Time#</div>
+    <div style="height:24px;">#:TaskTime#</div>
     <div class="task-time-slider" id="#:SliderId#"></div>
   </span>
 </script>
