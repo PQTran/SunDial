@@ -84,8 +84,8 @@
       padding: 4px;
     }
 
-    a {
-      text-decoration: none;
+    #create-category-state {
+      padding: 8px 0 0 8px;
     }
     </style>
 </head>
@@ -97,16 +97,39 @@
 </div>
 
 <div id="interactive-panel" style="font-family:sans-serif;">
-  <a class="btn btn-default btn-sm" href="#" ng-if="state0" style="display:inline-block; position:relative; left:5px; top:-5px;">
-    <span class="fa fa-plus-square"></span> Category
-  </a>
 
-  <h3 style="text-align:center; line-height:50px; margin:0; display:inline-block; width:200px; font-size:24px; font-weight:500;">SunDial</h3>
+  <div id="default-panel" ng-if="defaultState">
+    <a class="btn btn-default btn-sm" ng-click="displayPanel('create-category')" style="position:relative; left:5px; top:-5px;">
+      <span class="fa fa-plus-square"></span> Category
+    </a>
 
+    <h3 id="title">SunDial</h3>
 
-  <a class="btn btn-default btn-sm" href="#" ng-if="state0" style="display:inline-block; position:relative; top:-5px;">
+    <a class="btn btn-default btn-sm" ng-click="openCreditPage()" style="position:relative; top:-5px;">
       <span class="fa fa-info-circle"></span> Credit
-  </a>
+    </a>
+  </div>
+
+  <div id="create-category-state" ng-if="createCategoryState">
+    <label for="category-title">Title:</label>
+    <input name="category-title" type="text" ng-model="newCategoryTitle">
+
+    <a class="btn btn-default btn-sm" ng-click="createCategory(newCategoryTitle)" style="float:right; margin-right:12px; margin-top:2px;">
+      <span class="fa fa-check-square"></span> Create
+    </a>
+  </div>
+
+  <div id="create-task-state" ng-if="createTaskState">
+  </div>
+
+  <div id="edit-category-state" ng-if="editCategoryState">
+  </div>
+  
+  <div id="edit-task-state" ng-if="editTaskState">
+  </div>
+
+  <div id="delete-state" ng-if="deleteState">
+  </div>
 
 </div>
 

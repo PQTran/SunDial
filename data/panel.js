@@ -2,37 +2,23 @@ var app = angular.module('prototypeApp', ['kendo.directives']);
 
 app.controller('prototypeController', [ '$scope', function($scope) {
 
-  var mockData = [{ 
-    title: 'Test Centre Portal',
-    time: '1d',
-    entries: [
-      {title: 'Meetings', time: '30m'},
-      {title: 'Personnel Module', time: '4h'},
-      {title: 'Certification SRS', time: '3h 30m'}
-    ]
-  },
-  {
-    title: 'Scrum Meetings',
-    time: '2h 30m',
-    entries: [
-      {title: 'Monday scrum', time: '15m'},
-      {title: 'Tuesday IT meeting', time: '1h 30m'},
-      {title: 'Wednesday scrum', time: '15m'},
-      {title: 'Thursday scrum', time: '15m'},
-      {title: 'Friday scrum', time: '15m'}
-    ]
-  },
-  { 
-    title: 'SRM tasks',
-    time: '2d 7h',
-    entries: [
-      {title: "Clarify stakeholder's requirements", time: '2h'},
-      {title: 'Implement task', time: '2d 3h'},
-      {title: 'Code review', time: '1h'},
-      {title: 'Verify task', time: '1h'}
-    ]
-  }]; 
+  var mockData = [];
+  var kendoRendered = false;
+  var dataHasBeenReceived = false;
+  
+  self.port.emit('sendData');
 
+  self.port.on('data', function (data) {
+    dataHasBeenReceived = true;
+    mockData = data;
+    if (kendoRendered && dataHasBeenReceived) {
+      for (var i = 0; i < mockData.length; i++) {
+        insertData(mockData[i]);
+      }
+    }
+  });
+
+  
 
   $scope.contextMenuOptions = {
     target: '.k-item',
@@ -40,8 +26,12 @@ app.controller('prototypeController', [ '$scope', function($scope) {
   };
 
   $scope.$on('kendoRendered', function() {
-    for (var i = 0; i < mockData.length; i++) {
-      insertData(mockData[i]);
+    kendoRendered = true;
+    
+    if (kendoRendered && dataHasBeenReceived) {
+      for (var i = 0; i < mockData.length; i++) {
+        insertData(mockData[i]);
+      }
     }
   });
 
@@ -55,6 +45,7 @@ app.controller('prototypeController', [ '$scope', function($scope) {
     $scope.taskContextMenu.close();
     $scope.panelBar.collapse($('.k-header > .k-item'));
     $scope.panelBar.clearSelection();
+    $scope.displayPanel('default');
   });
 
   $scope.categoryContextMenuOptions = {
@@ -173,5 +164,33 @@ app.controller('prototypeController', [ '$scope', function($scope) {
 
     return result;
   }
+
+  $scope.displayPanel = function (panel) {
+    if (panel == 'default') {
+      $scope.defaultState = true;
+      $scope.createCategoryState = false;
+    }
+    if (panel == 'create-category') {
+      $scope.defaultState = false;
+      $scope.createCategoryState = true;
+    }
+  };
+
+
+  $scope.createCategory = function (newCategoryTitle) {
+    var categoryTemplate = kendo.template($('#category-template').html());
+    var categoryTemplateData = {CategoryTitle: newCategoryTitle, CategoryTime: "0m"};
+    var resultCategoryHtml = categoryTemplate(categoryTemplateData);
+
+    $scope.panelBar.append({text: resultCategoryHtml, encoded: false});
+
+    $scope.displayPanel('default');
+  };
+
+  $scope.displayPanel('default');
+  
+  $scope.openCreditPage = function () {
+    self.port.emit('openCreditPage', '');
+  };
 
 }]);

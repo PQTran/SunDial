@@ -13,11 +13,37 @@ var panels = require("sdk/panel");
 var tabs = require("sdk/tabs");
 
 var simpleStorage = require("sdk/simple-storage");
-simpleStorage.storage.data = [
-  { Category1: [{ title: "Title1", time: "30m" }, { title: "Title2", time: "2h" }] },
-  { Category2: [] },
-  { Category3: [{ title: "Title3", time: "3h 30m"}] }
-];
+simpleStorage.storage.data = [{ 
+    title: 'Test Centre Portal',
+    time: '1d',
+    entries: [
+      {title: 'Meetings', time: '30m'},
+      {title: 'Personnel Module', time: '4h'},
+      {title: 'Certification SRS', time: '3h 30m'}
+    ]
+  },
+  {
+    title: 'Scrum Meetings',
+    time: '2h 30m',
+    entries: [
+      {title: 'Monday scrum', time: '15m'},
+      {title: 'Tuesday IT meeting', time: '1h 30m'},
+      {title: 'Wednesday scrum', time: '15m'},
+      {title: 'Thursday scrum', time: '15m'},
+      {title: 'Friday scrum', time: '15m'}
+    ]
+  },
+  { 
+    title: 'SRM tasks',
+    time: '2d 7h',
+    entries: [
+      {title: "Clarify stakeholder's requirements", time: '2h'},
+      {title: 'Implement task', time: '2d 3h'},
+      {title: 'Code review', time: '1h'},
+      {title: 'Verify task', time: '1h'}
+    ]
+  }]; 
+
 
 var button = ToggleButton({
    id: "sundial-button",
@@ -49,11 +75,14 @@ var panel = panels.Panel({
 
 function handleHide() {
   panel.port.emit('resetApp');
-  button.state('window', { checked: false });
+  button.state('window', {checked: false});
 }
 
-panel.port.on('test', function () {
-  console.log('test');
+panel.port.on('openCreditPage', function () {
+  tabs.open('https://github.com/PQTran');
+  panel.hide();
 });
 
-panel.port.emit("testResponse", simpleStorage.storage.data);
+panel.port.on('sendData', function () {
+  panel.port.emit('data', simpleStorage.storage.data);
+});

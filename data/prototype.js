@@ -161,8 +161,32 @@ app.controller('prototypeController', [ '$scope', function($scope) {
     return result;
   }
 
-$scope.state0 = true;
-$scope.state1 = true;
+  $scope.displayPanel = function (panel) {
+    if (panel == 'default') {
+      $scope.defaultState = true;
+      $scope.createCategoryState = false;
+    }
+    if (panel == 'create-category') {
+      $scope.defaultState = false;
+      $scope.createCategoryState = true;
+    }
+  };
 
+
+  $scope.createCategory = function (newCategoryTitle) {
+    var categoryTemplate = kendo.template($('#category-template').html());
+    var categoryTemplateData = {CategoryTitle: newCategoryTitle, CategoryTime: "0m"};
+    var resultCategoryHtml = categoryTemplate(categoryTemplateData);
+
+    $scope.panelBar.append({text: resultCategoryHtml, encoded: false});
+
+    $scope.displayPanel('default');
+  };
+
+  $scope.displayPanel('default');
+  
+  $scope.openCreditPage = function () {
+    self.port.emit('openCreditPage', '');
+  };
 
 }]);
