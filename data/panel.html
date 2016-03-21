@@ -65,15 +65,39 @@
     .k-widget {
       border-width: 0;
     }
+
+    #interactive-panel {
+      background-color: #e5e5e5;
+      height: 50px;
+      width: 375px;
+    }
+
+    .k-menu .k-item > .k-link {
+      padding: 4px;
+    }
+
+
     </style>
 </head>
-<body ng-app="prototypeApp" ng-controller="prototypeController" style="background-color:red;">
+<body ng-app="prototypeApp" ng-controller="prototypeController">
 
 <!-- UI -->
 <div id="panel" style="background-color:#fafafa; height:250px; overflow-y:scroll; width:375px;">
   <ul kendo-panel-bar="panelBar"></ul>
 </div>
-<div style="height:50px; width:375px; background-color:#e5e5e5;">
+<div id="interactive-panel">
+  <button class="k-primary k-button">Category</button>
+</div>
+
+<div kendo-context-menu="categoryContextMenu" k-options="categoryContextMenuOptions">
+  <li>Add Task</li>
+  <li>Edit</li>
+  <li>Delete</li>
+</div>
+
+<div kendo-context-menu="taskContextMenu" k-options="taskContextMenuOptions">
+  <li>Edit</li>
+  <li>Delete</li>
 </div>
 
 <!-- Template scripts -->

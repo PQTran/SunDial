@@ -39,6 +39,31 @@ app.controller('prototypeController', [ '$scope', function($scope) {
     }
   });
 
+  $('#panel').scroll(function () {
+    $scope.categoryContextMenu.close();
+    $scope.taskContextMenu.close();
+  });
+
+  $scope.categoryContextMenuOptions = {
+    target: '.k-panelbar',
+    filter: '.k-header',
+    orientation: "horizontal",
+    alignToAnchor: true,
+    open: function () {
+      $scope.taskContextMenu.close();
+    }
+  };
+
+  $scope.taskContextMenuOptions = {
+    target: '.k-panelbar',
+    filter: '.k-group .k-item',
+    orientation: "horizontal",
+    alignToAnchor: true,
+    open: function () {
+      $scope.categoryContextMenu.close();
+    }
+  };
+
   $('#panel').kendoTooltip({
     position: 'top',
     width: 180,
@@ -135,5 +160,9 @@ app.controller('prototypeController', [ '$scope', function($scope) {
 
     return result;
   }
+
+$scope.state0 = true;
+$scope.state1 = true;
+
 
 }]);

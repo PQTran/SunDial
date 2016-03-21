@@ -33,11 +33,49 @@ app.controller('prototypeController', [ '$scope', function($scope) {
     ]
   }]; 
 
+
+  $scope.contextMenuOptions = {
+    target: '.k-item',
+    alignToAnchor: true
+  };
+
   $scope.$on('kendoRendered', function() {
     for (var i = 0; i < mockData.length; i++) {
       insertData(mockData[i]);
     }
   });
+
+  $('#panel').scroll(function () {
+    $scope.categoryContextMenu.close();
+    $scope.taskContextMenu.close();
+  });
+
+  self.port.on('resetApp', function () {
+    $scope.categoryContextMenu.close();
+    $scope.taskContextMenu.close();
+    $scope.panelBar.collapse($('.k-header > .k-item'));
+    $scope.panelBar.clearSelection();
+  });
+
+  $scope.categoryContextMenuOptions = {
+    target: '.k-panelbar',
+    filter: '.k-header',
+    orientation: "horizontal",
+    alignToAnchor: true,
+    open: function () {
+      $scope.taskContextMenu.close();
+    }
+  };
+
+  $scope.taskContextMenuOptions = {
+    target: '.k-panelbar',
+    filter: '.k-group .k-item',
+    orientation: "horizontal",
+    alignToAnchor: true,
+    open: function () {
+      $scope.categoryContextMenu.close();
+    }
+  };
 
   $('#panel').kendoTooltip({
     position: 'top',

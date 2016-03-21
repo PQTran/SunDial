@@ -48,7 +48,12 @@ var panel = panels.Panel({
 });
 
 function handleHide() {
-   button.state('window', { checked: false });
+  panel.port.emit('resetApp');
+  button.state('window', { checked: false });
 }
+
+panel.port.on('test', function () {
+  console.log('test');
+});
 
 panel.port.emit("testResponse", simpleStorage.storage.data);

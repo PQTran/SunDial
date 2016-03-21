@@ -3,6 +3,11 @@
   <link rel="stylesheet" href="kendo.common-material.min.css">
   <link rel="stylesheet" href="kendo.material.min.css">
   <link rel="stylesheet" href="prototype.css">
+  <!-- <link rel="stylesheet" href="font-awesome.min.css"> -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+
+<!-- <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous"> -->
+<link rel="stylesheet" href="bootstrap.css">
 
   <script src="jquery.min.js"></script>
   <script src="angular.min.js"></script>
@@ -28,9 +33,7 @@
     }
 
     .k-slider-horizontal .k-draghandle {
-      height: 3px;
-      top: -3px;
-      width: 3px;
+      display: none;
     }
 
     div.k-slider-track {
@@ -56,7 +59,6 @@
       width: 180px;
     }
 
-
     td {
       max-width: 200px;
       white-space: nowrap;
@@ -68,13 +70,56 @@
       visibility: hidden;
     }
 
+    .k-widget {
+      border-width: 0;
+    }
+
+    #interactive-panel {
+      background-color: #e5e5e5;
+      height: 50px;
+      width: 375px;
+    }
+
+    .k-menu .k-item > .k-link {
+      padding: 4px;
+    }
+
+    a {
+      text-decoration: none;
+    }
     </style>
 </head>
 <body ng-app="prototypeApp" ng-controller="prototypeController">
 
 <!-- UI -->
-<div id="panel" style="background-color:gray; height:250px; overflow-y:scroll; width:350px;">
+<div id="panel" style="background-color:gray; height:250px; overflow-y:scroll; width:375px;">
   <ul kendo-panel-bar="panelBar"></ul>
+</div>
+
+<div id="interactive-panel" style="font-family:sans-serif;">
+  <a class="btn btn-default btn-sm" href="#" ng-if="state0" style="display:inline-block; position:relative; left:5px; top:-5px;">
+    <span class="fa fa-plus-square"></span> Category
+  </a>
+
+  <h3 style="text-align:center; line-height:50px; margin:0; display:inline-block; width:200px; font-size:24px; font-weight:500;">SunDial</h3>
+
+
+  <a class="btn btn-default btn-sm" href="#" ng-if="state0" style="display:inline-block; position:relative; top:-5px;">
+      <span class="fa fa-info-circle"></span> Credit
+  </a>
+
+</div>
+
+
+<div kendo-context-menu="categoryContextMenu" k-options="categoryContextMenuOptions">
+  <li>Add Task</li>
+  <li>Edit</li>
+  <li>Delete</li>
+</div>
+
+<div kendo-context-menu="taskContextMenu" k-options="taskContextMenuOptions">
+  <li>Edit</li>
+  <li>Delete</li>
 </div>
 
 <!-- Template scripts -->
