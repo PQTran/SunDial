@@ -51,6 +51,19 @@ app.controller('prototypeController', [ '$scope', function($scope) {
     alignToAnchor: true,
     open: function () {
       $scope.taskContextMenu.close();
+    },
+    select: function (e) {
+      if (e.item.innerText == "Delete") {
+       $scope.categoryToBeDeleted = e.target.firstElementChild.innerText; 
+      }
+     // console.log(e.target);
+//      $scope.testTarget = e.target;
+
+
+      $scope.selectedCategory = { item: e.target, title: e.target.firstElementChild.innerText };
+      // console.log($scope.selectedCategory);
+    
+      console.log($($scope.selectedCategory.item.nextElementSibling.lastElementChild).find('.task-time-slider'));
     }
   };
 
@@ -159,6 +172,27 @@ app.controller('prototypeController', [ '$scope', function($scope) {
     }
 
     return result;
+  }
+
+  $scope.test = function () {
+
+
+    var taskTime = "1d";
+//    var baseId = $scope.selectedCategory.title.split(' ').join('');
+    var baseId = "uniqueId";
+      
+    var taskTemplate = kendo.template($("#task-template").html());
+    var taskTemplateData = { TaskTitle: "test", TaskTime: taskTime, SliderId: baseId + "6" };
+    var resultTaskHtml = taskTemplate(taskTemplateData);
+
+    var resultTaskItem = [{ text: resultTaskHtml, encoded: false }];
+    
+
+
+
+    $scope.panelBar.insertAfter(resultTaskItem, $("li.k-item.k-last").first());
+    // $scope.panelBar.insertAfter(resultTaskItem, $scope.selectedCategory.item);
+    // $scope.panelBar.insertAfter()
   }
 
   $scope.displayPanel = function (panel) {

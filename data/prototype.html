@@ -3,11 +3,8 @@
   <link rel="stylesheet" href="kendo.common-material.min.css">
   <link rel="stylesheet" href="kendo.material.min.css">
   <link rel="stylesheet" href="prototype.css">
-  <!-- <link rel="stylesheet" href="font-awesome.min.css"> -->
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
-
-<!-- <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous"> -->
-<link rel="stylesheet" href="bootstrap.css">
+  <link rel="stylesheet" href="font-awesome-4.5.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="bootstrap.css">
 
   <script src="jquery.min.js"></script>
   <script src="angular.min.js"></script>
@@ -137,7 +134,8 @@
 <div kendo-context-menu="categoryContextMenu" k-options="categoryContextMenuOptions">
   <li>Add Task</li>
   <li>Edit</li>
-  <li>Delete</li>
+  <li ng-click="createCategory('tset')">Delete</li>
+  <li ng-click="test()">Test</li>
 </div>
 
 <div kendo-context-menu="taskContextMenu" k-options="taskContextMenuOptions">

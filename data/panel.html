@@ -3,9 +3,8 @@
   <link rel="stylesheet" href="kendo.common-material.min.css">
   <link rel="stylesheet" href="kendo.material.min.css">
   <link rel="stylesheet" href="panel.css">
-
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
-<link rel="stylesheet" href="bootstrap.css">
+  <link rel="stylesheet" href="font-awesome-4.5.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="bootstrap.css">
 
   <style>
     body {
@@ -78,13 +77,14 @@
       padding: 4px;
     }
 
-    #create-category-state {
+    #create-category-state,
+    #create-task-state {
       padding: 8px 0 0 8px;
     }
 
     </style>
 </head>
-<body ng-app="prototypeApp" ng-controller="prototypeController">
+<body ng-app="sunDialApp" ng-controller="panelController">
 
 <!-- UI -->
 <div id="panel" style="background-color:#fafafa; height:250px; overflow-y:scroll; width:375px;">
@@ -92,39 +92,86 @@
 </div>
 <div id="interactive-panel">
 
-  <div id="default-panel" ng-if="defaultState">
+  <div id="default-panel" ng-show="defaultState">
     <a class="btn btn-default btn-sm" ng-click="displayPanel('create-category')" style="position:relative; left:5px; top:-5px;">
       <span class="fa fa-plus-square"></span> Category
     </a>
 
-    <h3 id="title">SunDial</h3>
+    <h3 id="title" style="text-align:center;">SunDial</h3>
 
     <a class="btn btn-default btn-sm" ng-click="openCreditPage()" style="position:relative; top:-5px;">
       <span class="fa fa-info-circle"></span> Credit
     </a>
   </div>
 
-  <div id="create-category-state" ng-if="createCategoryState">
+  <div id="create-category-state" ng-show="createCategoryState">
     <label for="category-title">Title:</label>
-    <input name="category-title" type="text" ng-model="newCategoryTitle">
-
-    <a class="btn btn-default btn-sm" ng-click="createCategory(newCategoryTitle)" style="float:right; margin-right:12px; margin-top:2px;">
-      <span class="fa fa-check-square"></span> Create
-    </a>
+    <input name="category-title" type="text" style="width:150px;" ng-model="newCategoryTitle">
+    
+    <div style="float:right; margin:2px 12px 0 0;">
+      <a class="btn btn-default btn-sm" ng-click="displayPanel('default')">
+        <span class="fa fa-times-circle"></span> Cancel
+      </a>
+      <a class="btn btn-default btn-sm" ng-click="createCategory(newCategoryTitle)">
+        <span class="fa fa-check-square"></span> Create
+      </a>
+    </div>
   </div>
 
-  <div id="create-task-state" ng-if="createTaskState">
+  <div id="create-task-state" ng-show="createTaskState">
+    <div ng-show="displayCreateTaskTitle" style="width:100%;">
+      <label for="task-title">Title:</label>
+      <input name="task-title" type="text" style="width:150px;" ng-model="newTaskTitle">
+    
+      <div style="float:right; margin-right:12px; margin-top:2px;">
+        <a class="btn btn-default btn-sm" ng-click="displayPanel('default')">
+          <span class="fa fa-times-circle"></span> Cancel
+        </a>
+        <a class="btn btn-default btn-sm" ng-click="displayCreateTaskTitle=false; displayCreateTaskTime=true;">
+          <span class="fa fa-arrow-circle-right"></span> Next
+        </a>
+      </div>
+    </div>
+
+    <div ng-show="displayCreateTaskTime" style="width:100%;">
+      <label for="task-title">Time:</label>
+      <input name="task-title" type="text" style="width:35px;" ng-model="newTaskTimeD"> d
+      <input name="task-title" type="text" style="width:35px;" ng-model="newTaskTimeH"> h
+      <input name="task-title" type="text" style="width:35px;" ng-model="newTaskTimeM"> m
+    
+      <div style="float:right; margin-right:12px; margin-top:2px;">
+        <a class="btn btn-default btn-sm" ng-click="displayPanel('default')">
+          <span class="fa fa-times-circle"></span> Cancel
+        </a>
+        <a class="btn btn-default btn-sm" ng-click="createTask()">
+          <span class="fa fa-arrow-circle-right"></span> Create
+        </a>
+      </div>
+    </div>
   </div>
 
   <div id="edit-category-state" ng-if="editCategoryState">
   </div>
   
   <div id="edit-task-state" ng-if="editTaskState">
+
   </div>
 
-  <div id="delete-state" ng-if="deleteState">
+  <div id="delete-category-state" ng-show="deleteCategoryState">
+    <h3 id="confirmation" style="text-align:left;">Are you sure?</h3>
+    <div style="display:inline-block; float:right; margin:12px 12px 0 0;">
+      <a class="btn btn-default btn-sm" ng-click="deleteCategory()">
+        Yes
+      </a>
+      <a class="btn btn-default btn-sm" ng-click="displayPanel('default')">
+        No
+      </a>
+    </div>
   </div>
 
+  <div id="delete-task-state" ng-show="deleteTaskState">
+
+  </div>
 </div>
 
 <div kendo-context-menu="categoryContextMenu" k-options="categoryContextMenuOptions">
