@@ -187,16 +187,20 @@
 
 <!-- Template scripts -->
 <script type="text/x-kendo-template" id="category-template">
-  <span id="category-title">#:CategoryTitle#</span>
-  <span id="category-time">#:CategoryTime#</span>
+  <div id="#:Id#">
+    <span id="category-title">#:CategoryTitle#</span>
+    <span id="category-time">#:CategoryTime#</span>
+  </div>
 </script>
 
 <script type="text/x-kendo-template" id="task-template">
-  <span id="task-title">- #:TaskTitle#</span>
-  <span id="task-time">
-    <div style="height:18px;">#:TaskTime#</div>
-    <div class="task-time-slider" id="#:SliderId#"></div>
-  </span>
+  <div id="#:Id#">
+    <span id="task-title">- #:TaskTitle#</span>
+    <span id="task-time">
+      <div style="height:18px;">#:TaskTime#</div>
+      <div class="task-time-slider" id="#:SliderId#"></div>
+    </span>
+  </div>
 </script>
 
 <script type="text/x-kendo-template" id="slider-template">

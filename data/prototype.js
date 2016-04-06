@@ -35,8 +35,12 @@ app.controller('prototypeController', [ '$scope', function($scope) {
 
   $scope.$on('kendoRendered', function() {
     for (var i = 0; i < mockData.length; i++) {
-      insertData(mockData[i]);
+      // insertData(mockData[i]);
+
+        displayCategoryHelper(mockData[i].title, mockData[i].time);
+        displayTasksHelper(mockData[i].entries, i);
     }
+
   });
 
   $('#panel').scroll(function () {
@@ -174,6 +178,76 @@ app.controller('prototypeController', [ '$scope', function($scope) {
     return result;
   }
 
+
+
+
+
+
+  function createUniqueSliderId(categoryIndex, taskIndex) {
+    return "slider_" + "c" + categoryIndex.toString() + "t" + taskIndex.toString();
+  }
+
+  function displayTasksHelper(tasks, categoryIndex) {
+    for (var i = 0; i < tasks.length; i++) {
+      var uniqueId = createUniqueSliderId(categoryIndex, i);
+      var task = tasks[i];
+
+      var taskTemplate = kendo.template($("#task-template").html());
+      var taskTemplateData = { TaskTitle: task.title, TaskTime: task.time, SliderId: uniqueId, Id: i };
+      var resultTaskHtml = taskTemplate(taskTemplateData);
+      
+      var resultTaskItem = { text: resultTaskHtml, encoded: false };      
+      
+    if (!$scope.testtest) {
+      console.log(resultTaskHtml);
+      $scope.testtest = 2;
+    }
+
+      $scope.panelBar.append(resultTaskItem, $(".k-panelbar > .k-item").eq(categoryIndex));
+
+       // var entry = entries[i];
+       // var entryTime = getTimeInMins(entry.time);
+       // var entryPercentage = entryTime / categoryTotalTime * 100;       
+
+       // var entrySlider = new kendo.View(
+         // "slider-template",
+         // { model: { Value: entryPercentage }, evalTemplate: true }
+       // );
+
+       // entrySlider.render("#" + baseId + i);        
+    }
+  }
+
+  function displayCategoryHelper(categoryTitle, categoryTime) {
+    var categoryTemplate = kendo.template($('#category-template').html());
+    var categoryTemplateData = { CategoryTitle: categoryTitle, CategoryTime: categoryTime, Id: 2 };
+    var resultCategoryHtml = categoryTemplate(categoryTemplateData);
+
+    $scope.panelBar.append({ text: resultCategoryHtml, encoded: false });
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   $scope.test = function () {
 
 
@@ -188,9 +262,9 @@ app.controller('prototypeController', [ '$scope', function($scope) {
     var resultTaskItem = [{ text: resultTaskHtml, encoded: false }];
     
 
+    $scope.panelBar.append(resultTaskItem, $(".k-panelbar > .k-item").eq(0))
 
-
-    $scope.panelBar.insertAfter(resultTaskItem, $("li.k-item.k-last").first());
+    // $scope.panelBar.insertAfter(resultTaskItem, $("li.k-item.k-last").first());
     // $scope.panelBar.insertAfter(resultTaskItem, $scope.selectedCategory.item);
     // $scope.panelBar.insertAfter()
   }

@@ -5,152 +5,160 @@ app.controller('panelController', [ '$scope', function($scope) {
   var mockData = [];
   var kendoRendered = false;
   var dataHasBeenReceived = false;
-  
-  self.port.emit('sendData');
+
+  function init() {
+    setupListeners();
+    setupKendo();
+
+    $scope.displayPanel('default');
+    self.port.emit('sendData');
+  }
+
+  function setupListeners() {
+    $('#panel').scroll(function () {
+      $scope.categoryContextMenu.close();
+      $scope.taskContextMenu.close();
+    });
+
+    $scope.$on('kendoRendered', function() {
+      kendoRendered = true;
+      insertDataIfAppropriate();
+    });
+
+    self.port.on('data', function (data) {
+      dataHasBeenReceived = true;
+      mockData = data;
+      insertDataIfAppropriate();
+    });
+
+    self.port.on('resetApp', function () {
+      $scope.categoryContextMenu.close();
+      $scope.taskContextMenu.close();
+      $scope.panelBar.collapse($('.k-header > .k-item'));
+      $scope.panelBar.clearSelection();
+
+      $scope.displayPanel('default');
+      $scope.$apply();
+    });
+  }
+
+  function setupKendo() {
+    $scope.categoryContextMenuOptions = {
+      target: '.k-panelbar',
+      filter: '.k-header',
+      orientation: "horizontal",
+      alignToAnchor: true,
+      open: function () {
+        $scope.taskContextMenu.close();
+      },
+      select: function (e) {
+        $scope.selectedCategory = { item: e.target, title: e.target.firstElementChild.innerText };
+        $scope.panelBar.expand($scope.selectedCategory.item.parentElement);
+        if (e.item.innerText == 'Add Task') {
+          $scope.displayPanel('create-task');
+        }
+        if (e.item.innerText == 'Edit') {
+        }
+        if (e.item.innerText == 'Delete') {
+          $scope.displayPanel('delete-category');
+        }
+        $scope.$apply();
+      }
+    };
+
+    $scope.taskContextMenuOptions = {
+      target: '.k-panelbar',
+      filter: '.k-group .k-item',
+      orientation: "horizontal",
+      alignToAnchor: true,
+      open: function () {
+        $scope.categoryContextMenu.close();
+      }
+    };
+
+    $('#panel').kendoTooltip({
+      position: 'top',
+      width: 180,
+      filter: '#task-title, #category-title',
+      show: function (e) {
+        if (this.content.text() != '') {
+          this.popup.wrapper.width('auto');
+          $('[role="tooltip"]').css('visibility', 'visible');
+        }
+      },
+      hide: function () {
+        $('[role="tooltip"]').css('visibility', 'hidden'); 
+      },
+      content: function (e) {
+        var element = e.target[0];
+
+        if (element.offsetWidth < element.scrollWidth && element.id == 'category-title') {
+          return e.target.text();
+        }
+        if (element.offsetWidth < element.scrollWidth && element.id == 'task-title') {
+          return e.target.text().substring(2);
+        }
+        else {
+          return '';
+        }
+      }
+    });
+  }
 
   function insertDataIfAppropriate() {
     if (kendoRendered && dataHasBeenReceived) {
       for (var i = 0; i < mockData.length; i++) {
-        insertData(mockData[i]);
+        var categoryTotalTime = getTimeInMins(mockData[i].time);
+        var categoryId = "c" + i.toString();
+
+        displayCategory(mockData[i].title, categoryId, mockData[i].time);
+        displayTasks(mockData[i].entries, i, categoryTotalTime);
       }
     }
   }
 
-  self.port.on('data', function (data) {
-    dataHasBeenReceived = true;
-    mockData = data;
-    insertDataIfAppropriate();
-  });
-
-  $scope.$on('kendoRendered', function() {
-    kendoRendered = true;
-    insertDataIfAppropriate();
-  });
-
-  $('#panel').scroll(function () {
-    $scope.categoryContextMenu.close();
-    $scope.taskContextMenu.close();
-  });
-
-  self.port.on('resetApp', function () {
-    $scope.categoryContextMenu.close();
-    $scope.taskContextMenu.close();
-    $scope.panelBar.collapse($('.k-header > .k-item'));
-    $scope.panelBar.clearSelection();
-
-    $scope.displayPanel('default');
-    $scope.$apply();
-  });
-
-  $scope.categoryContextMenuOptions = {
-    target: '.k-panelbar',
-    filter: '.k-header',
-    orientation: "horizontal",
-    alignToAnchor: true,
-    open: function () {
-      $scope.taskContextMenu.close();
-    },
-    select: function (e) {
-      $scope.selectedCategory = { item: e.target, title: e.target.firstElementChild.innerText };
-      $scope.panelBar.expand($scope.selectedCategory.item.parentElement);
-      if (e.item.innerText == 'Add Task') {
-        $scope.displayPanel('create-task');
-      }
-      if (e.item.innerText == 'Edit') {
-      }
-      if (e.item.innerText == 'Delete') {
-        $scope.displayPanel('delete-category');
-      }
-      $scope.$apply();
-    }
-  };
-
-  $scope.taskContextMenuOptions = {
-    target: '.k-panelbar',
-    filter: '.k-group .k-item',
-    orientation: "horizontal",
-    alignToAnchor: true,
-    open: function () {
-      $scope.categoryContextMenu.close();
-    }
-  };
-
-  $('#panel').kendoTooltip({
-    position: 'top',
-    width: 180,
-    filter: '#task-title, #category-title',
-    show: function (e) {
-      if (this.content.text() != '') {
-        this.popup.wrapper.width('auto');
-        $('[role="tooltip"]').css('visibility', 'visible');
-      }
-    },
-    hide: function () {
-      $('[role="tooltip"]').css('visibility', 'hidden'); 
-    },
-    content: function (e) {
-      var element = e.target[0];
-
-      if (element.offsetWidth < element.scrollWidth && element.id == 'category-title') {
-        return e.target.text();
-      }
-      if (element.offsetWidth < element.scrollWidth && element.id == 'task-title') {
-        return e.target.text().substring(2);
-      }
-      else {
-        return '';
-      }
-    }
-  });
-
-  function insertData(categoryItem) {
-    var baseId = categoryItem.title.split(' ').join('');
-
-    var categoryTemplate = kendo.template($('#category-template').html());
-    var categoryTemplateData = { CategoryTitle: categoryItem.title, CategoryTime: categoryItem.time };
-    var resultCategoryHtml = categoryTemplate(categoryTemplateData);
-
-    var taskItems = generateTaskItems(baseId, categoryItem);
-
-    $scope.panelBar.append({ text: resultCategoryHtml, encoded: false, items: taskItems });
-
-    generateTaskItemSliders(baseId, categoryItem);
+  function createUniqueId(categoryIndex, taskIndex) {
+    return "c" + categoryIndex.toString() + "t" + taskIndex.toString();
   }
 
-  function generateTaskItems(baseId, categoryItem) {
-    var entries = categoryItem.entries;
-
-    var resultTaskItems = [];
-    for (var i = 0; i < entries.length; i++) {
-      var entry = entries[i];
-      
+  function displayTaskPanelBarHelper(task, uniqueId, categoryIndex) {
       var taskTemplate = kendo.template($("#task-template").html());
-      var taskTemplateData = { TaskTitle: entry.title, TaskTime: entry.time, SliderId: baseId + i };
+      var taskTemplateData = { TaskTitle: task.title, TaskTime: task.time, SliderId: "slider_" + uniqueId, Id: uniqueId };
       var resultTaskHtml = taskTemplate(taskTemplateData);
       
       var resultTaskItem = { text: resultTaskHtml, encoded: false };
-      resultTaskItems.push(resultTaskItem);
-    }
-
-    return resultTaskItems;
+      
+      $scope.panelBar.append(resultTaskItem, $(".k-panelbar > .k-item").eq(categoryIndex));
   }
 
-  function generateTaskItemSliders(baseId, categoryItem) {
-    var entries = categoryItem.entries;
-    var categoryTotalTime = getTimeInMins(categoryItem.time);
-    
-    for (var i = 0; i < entries.length; i++) {
-       var entry = entries[i];
-       var entryTime = getTimeInMins(entry.time);
-       var entryPercentage = entryTime / categoryTotalTime * 100;       
+  function displayTaskSliderHelper(task, uniqueId, categoryTotalTime) {
+    var taskTime = getTimeInMins(task.time);
+    var taskPercentage = taskTime / categoryTotalTime * 100;       
 
-       var entrySlider = new kendo.View(
-         "slider-template",
-         { model: { Value: entryPercentage }, evalTemplate: true }
-       );
+    var taskSlider = new kendo.View(
+      "slider-template",
+      { model: { Value: taskPercentage }, evalTemplate: true }
+    );
 
-       entrySlider.render("#" + baseId + i);  
+    taskSlider.render("#" + "slider_" + uniqueId);
+  }
+
+  function displayTasks(tasks, categoryIndex, categoryTotalTime) {
+    for (var i = 0; i < tasks.length; i++) {
+      var uniqueId = createUniqueId(categoryIndex, i);
+      var task = tasks[i];
+
+      displayTaskPanelBarHelper(task, uniqueId, categoryIndex);
+      displayTaskSliderHelper(task, uniqueId, categoryTotalTime);
     }
+  }
+
+  function displayCategory(categoryTitle, categoryId, categoryTime) {
+    var categoryTemplate = kendo.template($('#category-template').html());
+    var categoryTemplateData = { CategoryTitle: categoryTitle, CategoryTime: categoryTime, Id: categoryId };
+    var resultCategoryHtml = categoryTemplate(categoryTemplateData);
+
+    $scope.panelBar.append({ text: resultCategoryHtml, encoded: false });
   }
 
   function getTimeInMins(timeStr) {
@@ -169,36 +177,35 @@ app.controller('panelController', [ '$scope', function($scope) {
     return result;
   }
 
+  function setStateHelper(defaultState, 
+                          createCategoryState,
+                          deleteCategoryState,
+                          createTaskState) {
+    $scope.defaultState = defaultState;
+    $scope.createCategoryState = createCategoryState;
+    $scope.deleteCategoryState = deleteCategoryState;
+    $scope.createTaskState = createTaskState;
+  }
+
   $scope.displayPanel = function (panel) {
     if (panel == 'default') {
-      $scope.defaultState = true;
-      $scope.createCategoryState = false;
-      $scope.deleteCategoryState = false;
-      $scope.createTaskState = false;
+      setStateHelper(true, false, false, false);
     }
     if (panel == 'create-category') {
       $scope.newCategoryTitle = "";
 
-      $scope.defaultState = false;
-      $scope.createCategoryState = true;
-      $scope.deleteCategoryState = false;
-      $scope.createTaskState = false;
+      setStateHelper(false, true, false, false);
     }
     if (panel == 'delete-category') {
-      $scope.defaultState = false;
-      $scope.createCategoryState = false;
-      $scope.deleteCategoryState = true;
-      $scope.createTaskState = false;
+      setStateHelper(false, false, true, false);
     }
     if (panel == 'create-task') {
       $scope.displayCreateTaskTitle = true;
 
-      $scope.defaultState = false;
-      $scope.createCategoryState = false;
-      $scope.deleteCategoryState = false;
-      $scope.createTaskState = true;
+      setStateHelper(false, false, false, true);
     }
   };
+
 
   function validateCategoryTitle() {
     var isValid = true;
@@ -208,13 +215,11 @@ app.controller('panelController', [ '$scope', function($scope) {
 
   $scope.createCategory = function (newCategoryTitle) {
     if (validateCategoryTitle()) {
+      var categoryId = "c" + $(".k-panelbar > .k-item").length.toString();
+
       mockData.push({ title: newCategoryTitle, time: '0m', entries: [] });
 
-      var categoryTemplate = kendo.template($('#category-template').html());
-      var categoryTemplateData = { CategoryTitle: newCategoryTitle, CategoryTime: '0m' };
-      var resultCategoryHtml = categoryTemplate(categoryTemplateData);
-
-      $scope.panelBar.append({ text: resultCategoryHtml, encoded: false });
+      displayCategory(newCategoryTitle, categoryId , '0m');
 
       $scope.displayPanel('default');
     }
@@ -285,10 +290,9 @@ app.controller('panelController', [ '$scope', function($scope) {
 
   }
 
-  $scope.displayPanel('default');
-  
   $scope.openCreditPage = function () {
     self.port.emit('openCreditPage', '');
   };
 
+  init();
 }]);
