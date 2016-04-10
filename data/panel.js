@@ -1,7 +1,6 @@
 var app = angular.module('sunDialApp', ['kendo.directives']);
 
 app.controller('panelController', [ '$scope', function($scope) {
-
   var mockData = [];
   var kendoRendered = false;
   var dataHasBeenReceived = false;
@@ -40,9 +39,37 @@ app.controller('panelController', [ '$scope', function($scope) {
       $scope.displayPanel('default');
       $scope.$apply();
     });
+
+    self.port.on('getData', function () {
+      self.port.emit('saveData', mockData);
+    });
   }
 
   function setupKendo() {
+    $scope.notificationOptions = {
+      autoHideAfter: 1600,
+      animation: {
+        open: {
+          duration: 300
+        },
+        close: {
+          duration: 300
+        }
+      },
+      width: 375,
+      position: {
+        bottom: 50,
+        left: 0
+      },
+      templates: [{
+        type: "custom-success",
+        template: $("#custom-success-template").html()
+      }, {
+        type: "custom-error",
+        template: $("#custom-error-template").html()
+      }]
+    };
+
     $scope.categoryContextMenuOptions = {
       target: '.k-panelbar',
       filter: '.k-header',
@@ -52,12 +79,18 @@ app.controller('panelController', [ '$scope', function($scope) {
         $scope.taskContextMenu.close();
       },
       select: function (e) {
-        $scope.selectedCategory = { item: e.target, title: e.target.firstElementChild.innerText };
-        $scope.panelBar.expand($scope.selectedCategory.item.parentElement);
+        var item = e.target.parentElement;
+        var title = e.target.firstElementChild.firstElementChild;
+        var titleText = title.innerText;
+
+        $scope.selectedCategory = { item: item, title: title, titleText: titleText };
+        $scope.panelBar.expand($scope.selectedCategory.item);
+
         if (e.item.innerText == 'Add Task') {
           $scope.displayPanel('create-task');
         }
         if (e.item.innerText == 'Edit') {
+          $scope.displayPanel('edit-category');
         }
         if (e.item.innerText == 'Delete') {
           $scope.displayPanel('delete-category');
@@ -103,6 +136,14 @@ app.controller('panelController', [ '$scope', function($scope) {
         }
       }
     });
+  }
+
+  function notificationShow(message, type) {
+    if ($(".k-animation-container").length == 1) {
+      $(".k-animation-container").remove();
+    }
+
+    $scope.notification.show({ Message: message }, type);
   }
 
   function insertDataIfAppropriate() {
@@ -179,68 +220,108 @@ app.controller('panelController', [ '$scope', function($scope) {
 
   function setStateHelper(defaultState, 
                           createCategoryState,
+                          editCategoryState,
                           deleteCategoryState,
                           createTaskState) {
     $scope.defaultState = defaultState;
     $scope.createCategoryState = createCategoryState;
+    $scope.editCategoryState = editCategoryState;
     $scope.deleteCategoryState = deleteCategoryState;
     $scope.createTaskState = createTaskState;
   }
 
   $scope.displayPanel = function (panel) {
     if (panel == 'default') {
-      setStateHelper(true, false, false, false);
+      setStateHelper(true, false, false, false, false);
     }
     if (panel == 'create-category') {
       $scope.newCategoryTitle = "";
 
-      setStateHelper(false, true, false, false);
+      setStateHelper(false, true, false, false, false);
+    }
+    if (panel == 'edit-category') {
+      $scope.newCategoryTitle = $scope.selectedCategory.titleText;
+
+      setStateHelper(false, false, true, false, false);
     }
     if (panel == 'delete-category') {
-      setStateHelper(false, false, true, false);
+      setStateHelper(false, false, false, true, false);
     }
     if (panel == 'create-task') {
       $scope.displayCreateTaskTitle = true;
 
-      setStateHelper(false, false, false, true);
+      setStateHelper(false, false, false, false, true);
     }
   };
 
 
-  function validateCategoryTitle() {
+  function validateCategoryTitle(categoryTitle) {
     var isValid = true;
-    isValid = isValid && $scope.newCategoryTitle != "";
+    isValid = isValid && categoryTitle != "";
     return isValid;
   }
 
   $scope.createCategory = function (newCategoryTitle) {
-    if (validateCategoryTitle()) {
+    if (validateCategoryTitle(newCategoryTitle)) {
       var categoryId = "c" + $(".k-panelbar > .k-item").length.toString();
 
       mockData.push({ title: newCategoryTitle, time: '0m', entries: [] });
 
-      displayCategory(newCategoryTitle, categoryId , '0m');
+      displayCategory(newCategoryTitle, categoryId, '0m');
 
       $scope.displayPanel('default');
+      notificationShow('Successfully created category', 'custom-success');
+      console.log(mockData);
     }
     else {
-      // display notification
+      notificationShow('Unsuccessfully created category', 'custom-error');
     }
   };
 
+  $scope.updateCategory = function (newCategoryTitle) {
+    if (validateCategoryTitle(newCategoryTitle)) {
+      for (var i = 0; i < mockData.length; i++) {
+        if (mockData[i].title == $scope.selectedCategory.titleText) {
+          mockData[i].title = newCategoryTitle;
+        }
+      }
+
+      $scope.selectedCategory.title.textContent = newCategoryTitle;
+      $scope.displayPanel('default');
+      notificationShow('Successfully edited category', 'custom-success');
+
+      console.log(mockData);
+    }
+    else {
+      notificationShow('Unsuccessfully edited message', 'custom-error');
+    }
+  }
+
   $scope.deleteCategory = function () {
+    var deleted = false;
+
     var index;
     for (var i = 0; i < mockData.length; i++) {
-      if (mockData[i].title == $scope.selectedCategory.title) {
+      if (mockData[i].title == $scope.selectedCategory.titleText) {
         index = i;
       }
     }
-    if (index) {
+    if (index != null) {
       mockData.splice(index, 1);
+      deleted = true;
     }
 
-    $scope.panelBar.remove($scope.selectedCategory.item.parentElement);
+    $scope.panelBar.remove($scope.selectedCategory.item);
     $scope.displayPanel('default');
+
+    if (deleted) {
+      notificationShow('Successfully deleted category', 'custom-success');
+    }
+    else {
+      notificationShow('Unsuccessfully deleted category', 'custom-error');
+    }
+
+    console.log(mockData);
   }
 
   function increment_last(v) {

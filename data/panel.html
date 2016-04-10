@@ -1,8 +1,8 @@
 <html>
 <head>
+  <link rel="stylesheet" href="panel.css">
   <link rel="stylesheet" href="kendo.common-material.min.css">
   <link rel="stylesheet" href="kendo.material.min.css">
-  <link rel="stylesheet" href="panel.css">
   <link rel="stylesheet" href="font-awesome-4.5.0/css/font-awesome.min.css">
   <link rel="stylesheet" href="bootstrap.css">
 
@@ -66,6 +66,13 @@
       border-width: 0;
     }
 
+    #panel {
+      background-color: gray;
+      height: 250px;
+      overflow-y: scroll;
+      width: 375px;
+    }
+
     #interactive-panel {
       background-color: #e5e5e5;
       font-family: sans-serif;
@@ -77,9 +84,13 @@
       padding: 4px;
     }
 
-    #create-category-state,
-    #create-task-state {
+    .state {
       padding: 8px 0 0 8px;
+    }
+
+    #default-panel,
+    #delete-category-state {
+      padding: 0;
     }
 
     </style>
@@ -87,12 +98,25 @@
 <body ng-app="sunDialApp" ng-controller="panelController">
 
 <!-- UI -->
-<div id="panel" style="background-color:#fafafa; height:250px; overflow-y:scroll; width:375px;">
+<div kendo-notification="notification" k-options="notificationOptions"></div>
+<script type="text/x-kendo-template" id="custom-success-template">
+  <div style="line-height:31px; height:31px; background-color:rgb(38,139,210);">
+    <span class="fa fa-thumbs-o-up" style="margin:0 7px 0 13px;"></span>#:Message#
+  </div>
+</script>
+
+<script type="text/x-kendo-template" id="custom-error-template">
+  <div style="line-height:31px; height:31px; background-color:rgb(203,75,22); color:black;">
+    <span class="fa fa-thumbs-o-down" style="margin:0 7px 0 13px;"></span>#:Message#
+  </div>
+</script>
+
+<div id="panel">
   <ul kendo-panel-bar="panelBar"></ul>
 </div>
 <div id="interactive-panel">
 
-  <div id="default-panel" ng-show="defaultState">
+  <div class="state" id="default-panel" ng-show="defaultState">
     <a class="btn btn-default btn-sm" ng-click="displayPanel('create-category')" style="position:relative; left:5px; top:-5px;">
       <span class="fa fa-plus-square"></span> Category
     </a>
@@ -104,7 +128,7 @@
     </a>
   </div>
 
-  <div id="create-category-state" ng-show="createCategoryState">
+  <div class="state" id="create-category-state" ng-show="createCategoryState">
     <label for="category-title">Title:</label>
     <input name="category-title" type="text" style="width:150px;" ng-model="newCategoryTitle">
     
@@ -118,7 +142,33 @@
     </div>
   </div>
 
-  <div id="create-task-state" ng-show="createTaskState">
+  <div class="state" id="edit-category-state" ng-if="editCategoryState">
+    <label for="category-title">Title:</label>
+    <input name="category-title" type="text" style="width:150px;" ng-model="newCategoryTitle">
+    
+    <div style="float:right; margin:2px 12px 0 0;">
+      <a class="btn btn-default btn-sm" ng-click="displayPanel('default')">
+        <span class="fa fa-times-circle"></span> Cancel
+      </a>
+      <a class="btn btn-default btn-sm" ng-click="updateCategory(newCategoryTitle)">
+        <span class="fa fa-check-square"></span> Update
+      </a>
+    </div>
+  </div>
+  
+  <div class="state" id="delete-category-state" ng-show="deleteCategoryState">
+    <h3 id="confirmation" style="text-align:left;">Are you sure?</h3>
+    <div style="display:inline-block; float:right; margin:12px 12px 0 0;">
+      <a class="btn btn-default btn-sm" ng-click="deleteCategory()">
+        Yes
+      </a>
+      <a class="btn btn-default btn-sm" ng-click="displayPanel('default')">
+        No
+      </a>
+    </div>
+  </div>
+
+  <div class="state" id="create-task-state" ng-show="createTaskState">
     <div ng-show="displayCreateTaskTitle" style="width:100%;">
       <label for="task-title">Title:</label>
       <input name="task-title" type="text" style="width:150px;" ng-model="newTaskTitle">
@@ -150,27 +200,10 @@
     </div>
   </div>
 
-  <div id="edit-category-state" ng-if="editCategoryState">
-  </div>
-  
-  <div id="edit-task-state" ng-if="editTaskState">
-
+  <div class="state" id="edit-task-state" ng-if="editTaskState">
   </div>
 
-  <div id="delete-category-state" ng-show="deleteCategoryState">
-    <h3 id="confirmation" style="text-align:left;">Are you sure?</h3>
-    <div style="display:inline-block; float:right; margin:12px 12px 0 0;">
-      <a class="btn btn-default btn-sm" ng-click="deleteCategory()">
-        Yes
-      </a>
-      <a class="btn btn-default btn-sm" ng-click="displayPanel('default')">
-        No
-      </a>
-    </div>
-  </div>
-
-  <div id="delete-task-state" ng-show="deleteTaskState">
-
+  <div class="state" id="delete-task-state" ng-show="deleteTaskState">
   </div>
 </div>
 
