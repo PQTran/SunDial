@@ -1,0 +1,250 @@
+<html style="width:375px;">
+<head>
+  <link rel="stylesheet" href="kendo.common-material.min.css">
+  <link rel="stylesheet" href="kendo.material.min.css">
+  <link rel="stylesheet" href="panel.css">
+  <link rel="stylesheet" href="font-awesome-4.5.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="bootstrap.css">
+
+
+  <script src="jquery.min.js"></script>
+  <script src="angular.min.js"></script>
+  <script src="kendo.all.min.js"></script>
+  <script src="prototype3.js"></script>
+
+  <style>
+    body {
+      margin: 0;
+    }
+
+    .k-draghandle:hover {
+      display: none;
+    }
+
+    .k-state-disabled,
+    .k-state-disabled > .k-slider-wrap {
+      opacity: 1;
+    }
+
+    .k-panel .k-item .k-link {
+      line-height: 2.25em;
+    }
+
+    .k-slider-horizontal .k-draghandle {
+      display: none;
+    }
+
+    div.k-slider-track {
+      background-color: orange;
+    }
+
+    .k-slider-horizontal {
+      height: 10px;
+      top: 17px;
+      width: 90px;
+    }
+
+    .k-link.k-state-selected {
+      background-color: #ebebeb;
+    }
+
+    #category-title,
+    #task-title {
+      display: inline-block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      width: 180px;
+    }
+
+    td {
+      max-width: 200px;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
+    }
+
+    [role="tooltip"] {
+      visibility: hidden;
+    }
+
+    .k-widget {
+      border-width: 0;
+    }
+
+    #panel {
+      background-color: gray;
+      height: 250px;
+      overflow-y: scroll;
+      width: 375px;
+    }
+
+    #interactive-panel {
+      background-color: #e5e5e5;
+      font-family: sans-serif;
+      height: 50px;
+      width: 375px;
+    }
+
+    .k-menu .k-item > .k-link {
+      padding: 4px;
+    }
+
+    .state {
+      padding: 8px 0 0 8px;
+    }
+
+    #default-panel,
+    #delete-category-state {
+      padding: 0;
+    }
+
+    </style>
+</head>
+<body ng-app="sunDialApp" ng-controller="panelController">
+
+<!-- UI -->
+<div kendo-notification="notification" k-options="notificationOptions"></div>
+<script type="text/x-kendo-template" id="custom-success-template">
+  <div style="line-height:31px; height:31px; background-color:rgb(38,139,210);">
+    <span class="fa fa-thumbs-o-up" style="margin:0 7px 0 13px;"></span>#:Message#
+  </div>
+</script>
+
+<script type="text/x-kendo-template" id="custom-error-template">
+  <div style="line-height:31px; height:31px; background-color:rgb(203,75,22); color:black;">
+    <span class="fa fa-thumbs-o-down" style="margin:0 7px 0 13px;"></span>#:Message#
+  </div>
+</script>
+
+<div id="panel">
+  <ul kendo-panel-bar="panelBar"></ul>
+</div>
+<div id="interactive-panel">
+
+  <div class="state" id="default-panel" ng-show="defaultState">
+    <a class="btn btn-default btn-sm" ng-click="displayPanel('create-category')" style="position:relative; left:5px; top:-5px;">
+      <span class="fa fa-plus-square"></span> Category
+    </a>
+
+    <h3 id="title" style="text-align:center;">SunDial</h3>
+
+    <a class="btn btn-default btn-sm" ng-click="openCreditPage()" style="position:relative; top:-5px;">
+      <span class="fa fa-info-circle"></span> Credit
+    </a>
+  </div>
+
+  <div class="state" id="create-category-state" ng-show="createCategoryState">
+    <label for="category-title">Title:</label>
+    <input name="category-title" type="text" style="width:150px;" ng-model="newCategoryTitle">
+    
+    <div style="float:right; margin:2px 12px 0 0;">
+      <a class="btn btn-default btn-sm" ng-click="displayPanel('default')">
+        <span class="fa fa-times-circle"></span> Cancel
+      </a>
+      <a class="btn btn-default btn-sm" ng-click="createCategory(newCategoryTitle)">
+        <span class="fa fa-check-square"></span> Create
+      </a>
+    </div>
+  </div>
+
+  <div class="state" id="edit-category-state" ng-if="editCategoryState">
+    <label for="category-title">Title:</label>
+    <input name="category-title" type="text" style="width:150px;" ng-model="newCategoryTitle">
+    
+    <div style="float:right; margin:2px 12px 0 0;">
+      <a class="btn btn-default btn-sm" ng-click="displayPanel('default')">
+        <span class="fa fa-times-circle"></span> Cancel
+      </a>
+      <a class="btn btn-default btn-sm" ng-click="updateCategory(newCategoryTitle)">
+        <span class="fa fa-check-square"></span> Update
+      </a>
+    </div>
+  </div>
+  
+  <div class="state" id="delete-category-state" ng-show="deleteCategoryState">
+    <h3 id="confirmation" style="text-align:left;">Are you sure?</h3>
+    <div style="display:inline-block; float:right; margin:12px 12px 0 0;">
+      <a class="btn btn-default btn-sm" ng-click="deleteCategory()">
+        Yes
+      </a>
+      <a class="btn btn-default btn-sm" ng-click="displayPanel('default')">
+        No
+      </a>
+    </div>
+  </div>
+
+  <div class="state" id="create-task-state" ng-show="createTaskState">
+    <div ng-show="displayCreateTaskTitle" style="width:100%;">
+      <label for="task-title">Title:</label>
+      <input name="task-title" type="text" style="width:150px;" ng-model="newTaskTitle">
+    
+      <div style="float:right; margin-right:12px; margin-top:2px;">
+        <a class="btn btn-default btn-sm" ng-click="displayPanel('default')">
+          <span class="fa fa-times-circle"></span> Cancel
+        </a>
+        <a class="btn btn-default btn-sm" ng-click="displayCreateTaskTitle=false; displayCreateTaskTime=true;">
+          <span class="fa fa-arrow-circle-right"></span> Next
+        </a>
+      </div>
+    </div>
+
+    <div ng-show="displayCreateTaskTime" style="width:100%;">
+      <label for="task-title">Time:</label>
+      <input name="task-title" type="text" style="width:35px;" ng-model="newTaskTimeD"> d
+      <input name="task-title" type="text" style="width:35px;" ng-model="newTaskTimeH"> h
+      <input name="task-title" type="text" style="width:35px;" ng-model="newTaskTimeM"> m
+    
+      <div style="float:right; margin-right:12px; margin-top:2px;">
+        <a class="btn btn-default btn-sm" ng-click="displayPanel('default')">
+          <span class="fa fa-times-circle"></span> Cancel
+        </a>
+        <a class="btn btn-default btn-sm" ng-click="createTask()">
+          <span class="fa fa-arrow-circle-right"></span> Create
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="state" id="edit-task-state" ng-if="editTaskState">
+  </div>
+
+  <div class="state" id="delete-task-state" ng-show="deleteTaskState">
+  </div>
+</div>
+
+<div kendo-context-menu="categoryContextMenu" k-options="categoryContextMenuOptions">
+  <li>Add Task</li>
+  <li>Edit</li>
+  <li>Delete</li>
+</div>
+
+<div kendo-context-menu="taskContextMenu" k-options="taskContextMenuOptions">
+  <li>Edit</li>
+  <li>Delete</li>
+</div>
+
+<!-- Template scripts -->
+<script type="text/x-kendo-template" id="category-template">
+  <div id="#:Id#">
+    <span id="category-title">#:CategoryTitle#</span>
+    <span id="category-time">#:CategoryTime#</span>
+  </div>
+</script>
+
+<script type="text/x-kendo-template" id="task-template">
+  <div id="#:Id#">
+    <span id="task-title">- #:TaskTitle#</span>
+    <span id="task-time">
+      <div style="height:18px;">#:TaskTime#</div>
+      <div class="task-time-slider" id="#:SliderId#"></div>
+    </span>
+  </div>
+</script>
+
+<script type="text/x-kendo-template" id="slider-template">
+   <div kendo-slider data-role="slider" max="100" tick-placement="'none'" data-show-buttons="false" tool-tip-enabled="false" value="#:Value#" disabled></div>
+</script>
+
+</body>
+</html>
