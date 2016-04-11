@@ -13,31 +13,34 @@ app.controller('panelController', [ '$scope', function($scope) {
 
     var data = [
       {
+        id: 'c0',
         title: 'Test Centre Portal',
         time: '8h',
         entries: [
-          { title: 'Meetings', time: '30m' },
-          { title: 'Personnel Module', time: '4h' },
-          { title: 'Certification SRS', time: '3h 30m' }
+          { id: 'c0t0', title: 'Meetings', time: '30m' },
+          { id: 'c0t1', title: 'Personnel Module', time: '4h' },
+          { id: 'c0t2', title: 'Certification SRS', time: '3h 30m' }
         ]},
       {
+        id: 'c1',
         title: 'Scrum Meetings',
         time: '2h 30m',
         entries: [
-          { title: 'Monday scrum', time: '15m' },
-          { title: 'Tuesday IT meeting', time: '1h 30m' },
-          { title: 'Wednesday scrum', time: '15m' },
-          { title: 'Thursday scrum', time: '15m' },
-          { title: 'Friday scrum', time: '15m' }
+          { id: 'c1t0', title: 'Monday scrum', time: '15m' },
+          { id: 'c1t1', title: 'Tuesday IT meeting', time: '1h 30m' },
+          { id: 'c1t2', title: 'Wednesday scrum', time: '15m' },
+          { id: 'c1t3', title: 'Thursday scrum', time: '15m' },
+          { id: 'c1t4', title: 'Friday scrum', time: '15m' }
         ]},
-      { 
+      {
+        id: 'c2',
         title: 'SRM tasks',
         time: '2d 7h',
         entries: [
-          { title: "Clarify stakeholder's requirements", time: '2h' },
-          { title: 'Implement task', time: '2d 3h' },
-          { title: 'Code review', time: '1h' },
-          { title: 'Verify task', time: '1h' }
+          { id: 'c2t0', title: "Clarify stakeholder's requirements", time: '2h' },
+          { id: 'c2t1', title: 'Implement task', time: '2d 3h' },
+          { id: 'c2t2', title: 'Code review', time: '1h' },
+          { id: 'c2t3', title: 'Verify task', time: '1h' }
         ]}
     ];
 
@@ -96,8 +99,15 @@ app.controller('panelController', [ '$scope', function($scope) {
         var item = e.target.parentElement;
         var title = e.target.firstElementChild.firstElementChild;
         var titleText = title.textContent;
+        
+        var time;
+        for (var i = 0; i < mockData.length; i++) {
+          if (titleText == mockData[i].title) {
+            time = mockData[i].time;
+          }
+        }
 
-        $scope.selectedCategory = { item: item, title: title, titleText: titleText };
+        $scope.selectedCategory = { item: item, title: title, titleText: titleText, time: time };
         $scope.panelBar.expand($scope.selectedCategory.item);
 
         if (e.item.textContent == 'Add Task') {
@@ -181,16 +191,12 @@ app.controller('panelController', [ '$scope', function($scope) {
     if (kendoRendered && dataHasBeenReceived) {
       for (var i = 0; i < mockData.length; i++) {
         var categoryTotalTime = getTimeInMins(mockData[i].time);
-        var categoryId = "c" + i.toString();
+        var categoryId = mockData[i].id;
 
         displayCategory(mockData[i].title, categoryId, mockData[i].time);
         displayTasks(mockData[i].entries, i, categoryTotalTime);
       }
     }
-  }
-
-  function createUniqueId(categoryIndex, taskIndex) {
-    return "c" + categoryIndex.toString() + "t" + taskIndex.toString();
   }
 
   function taskPanelBarHelper(task, uniqueId) {
@@ -206,26 +212,23 @@ app.controller('panelController', [ '$scope', function($scope) {
 
   function displayTaskSliderHelper(task, uniqueId, categoryTotalTime) {
     var sliderId = "slider_" + uniqueId;
-    
-    console.log(task.time);
 
     var taskTime = getTimeInMins(task.time);
     var taskPercentage = taskTime / categoryTotalTime * 100;       
-    console.log(taskTime);
+
     var taskSlider = new kendo.View(
       "slider-template",
       { model: { Value: taskPercentage }, evalTemplate: true }
     );
-    
-    console.log(taskPercentage);
+
     taskSlider.render("#" + sliderId);
   }
 
   function displayTasks(tasks, categoryIndex, categoryTotalTime) {
     for (var i = 0; i < tasks.length; i++) {
-      var uniqueId = createUniqueId(categoryIndex, i);
       var task = tasks[i];
-
+      var uniqueId = task.id;
+      
       var resultTaskItem = taskPanelBarHelper(task, uniqueId);
       $scope.panelBar.append(resultTaskItem, $(".k-panelbar > .k-item").eq(categoryIndex));
       
@@ -261,15 +264,15 @@ app.controller('panelController', [ '$scope', function($scope) {
     var remainingTime = timeInMins;
     var tempTime = {};
 
-    if (remainingTime / 60 / 24 > 1) {
+    if (remainingTime / 60 / 24 >= 1) {
       tempTime.d = Math.floor(remainingTime / 60 / 24);
       remainingTime = remainingTime % (60 * 24);
     }
-    if (remainingTime / 60 > 1) {
+    if (remainingTime / 60 >= 1) {
       tempTime.h = Math.floor(remainingTime / 60);
       remainingTime = remainingTime % 60;
     }
-    if (remainingTime > 1) {
+    if (remainingTime >= 1) {
       tempTime.m = remainingTime;
     }
 
@@ -352,11 +355,28 @@ app.controller('panelController', [ '$scope', function($scope) {
     return isValid;
   }
 
+  function getNextCategoryId() {
+    var highestNum = 0;
+    for (var i = 0; i < mockData.length; i++) {
+      var tempStr = mockData[i].id.substring(1);
+      var tempNum = parseInt(tempStr);
+
+      if (tempNum > highestNum) {
+        highestNum = tempNum;
+      }
+    }
+    
+    highestNum += 1;
+    var resultId = "c" + highestNum.toString();
+    console.log(resultId);
+    return resultId;
+  }
+  
   $scope.createCategory = function (newCategoryTitle) {
     if (validateCategoryTitle(newCategoryTitle)) {
-      var categoryId = "c" + $(".k-panelbar > .k-item").length.toString();
+      var categoryId = getNextCategoryId();
 
-      mockData.push({ title: newCategoryTitle, time: '0m', entries: [] });
+      mockData.push({ id: categoryId, title: newCategoryTitle, time: '0m', entries: [] });
 
       displayCategory(newCategoryTitle, categoryId, '0m');
 
@@ -483,12 +503,33 @@ app.controller('panelController', [ '$scope', function($scope) {
     return v.replace(/[0-9]+(?!.*[0-9])/, parseInt(v.match(/[0-9]+(?!.*[0-9])/), 10)+1);
   }
 
-  function getUniqueIdByLastTaskItemHelper(lastTaskItem) {
-    var tempBaseStr = $(lastTaskItem).find('.task-time-slider')[0].id;
-    var newBaseId = increment_last(tempBaseStr);
+  function getNextTaskId(categoryTitle) {
+    var categoryId;
+    var tasks;
+
+    for (var i = 0; i < mockData.length; i++) {
+      if (categoryTitle == mockData[i].title) {
+        categoryId = mockData[i].id;
+        tasks = mockData[i].entries;
+      }
+    }
+
+    var highestNum = 0;
+    for (var i = 0; i < tasks.length; i++) {
+      var taskId = tasks[i].id;
+      var tempStr = taskId.substring(taskId.indexOf("t") + 1);
+
+      var tempNum = parseInt(tempStr);
+
+      if (tempNum > highestNum) {
+        highestNum = tempNum;
+      }
+    }
     
-    var resultUniqueId = newBaseId.substring(7);
-    return resultUniqueId;
+    highestNum += 1;
+    var resultId = categoryId + "t" + highestNum.toString();
+
+    return resultId;
   }
 
   function updateCategoryTimeHelper(categoryTimeText, timeTextToAdd) {
@@ -508,35 +549,99 @@ app.controller('panelController', [ '$scope', function($scope) {
   }
 
   function updateTasksSlidersHelper(newTask, uniqueId, categoryTotalTime) {
+    console.log(categoryTotalTime);
     displayTaskSliderHelper(newTask, uniqueId, categoryTotalTime);
   }
 
-  $scope.createTask = function (newTaskTitle, newTaskTime) {
-    var lastTaskItemWrtCategory = $scope.selectedCategory.item.lastElementChild.lastElementChild;
-    var uniqueId = getUniqueIdByLastTaskItemHelper(lastTaskItemWrtCategory);
-
-    var newTaskTimeText = timeObjToText(newTaskTime);
-
-    var newTask = { title: newTaskTitle, time: newTaskTimeText };
+  function removeSliders(categoryTitle) {
+    var tasks;
     
-    var resultTaskItem = taskPanelBarHelper(newTask, uniqueId);
+    for (var i = 0; i < mockData.length; i++) {
+      if (categoryTitle == mockData[i].title) {
+        tasks = mockData[i].entries;
+      }
+    }
+
+    for (var j = 0; j < tasks.length; j++) {
+      var sliderId = "slider_" + tasks[j].id;
+
+      $("#" + sliderId).children().remove();
+    }
+  }
+
+  function addNewTask(newTask) {
+    var resultTaskItem = taskPanelBarHelper(newTask, newTask.id);
+    var lastTaskItemWrtCategory = $scope.selectedCategory.item.lastElementChild.lastElementChild;
     $scope.panelBar.insertAfter(resultTaskItem, lastTaskItemWrtCategory);
 
+    var categoryTime = $scope.selectedCategory.time;
+
+    updateCategoryTimeHelper(categoryTime, newTask.time);
+    
+    for (var i = 0; i < mockData.length; i++) {
+      if ($scope.selectedCategory.titleText == mockData[i].title) {
+        $scope.selectedCategory.time = mockData[i].time;
+      }
+    }
+
+  }
+
+  function addSliders() {
+    var categoryTime = $scope.selectedCategory.time;
+    var categoryTimeInMins = getTimeInMins(categoryTime);
+    var tasks;
+
+    for (var i = 0; i < mockData.length; i++) {
+      if ($scope.selectedCategory.titleText == mockData[i].title) {
+        tasks = mockData[i].entries;
+      }
+    }
+
+    for (var j = 0; j < tasks.length; j++) {
+      var task = tasks[j];
+      updateTasksSlidersHelper(task, task.id, categoryTimeInMins);
+    }
+
+  }
+
+  function convertTimeToLargestDenominator(timeText) {
+    return getTimeInMinsInverse(getTimeInMins(timeText));
+  }
+
+  $scope.createTask = function (newTaskTitle, newTaskTime) {
+    var categoryTitle = $scope.selectedCategory.titleText;
+    var newTaskId = getNextTaskId(categoryTitle);
+    console.log("newTaskId", newTaskId);
+
+    var newTaskTimeText = timeObjToText(newTaskTime);
+    newTaskTimeText = convertTimeToLargestDenominator(newTaskTimeText);
+
+    var newTask = { id: newTaskId, title: newTaskTitle, time: newTaskTimeText };
+    
     for (var i = 0; i < mockData.length; i++) {
       if (mockData[i].title == $scope.selectedCategory.titleText) {
         mockData[i].entries.push(newTask);
       }
     }
 
+    removeSliders(categoryTitle);
+    addNewTask(newTask);
+
+    addSliders();
+
     console.log(mockData);
+    // var resultTaskItem = taskPanelBarHelper(newTask, uniqueId);
+    // $scope.panelBar.insertAfter(resultTaskItem, lastTaskItemWrtCategory);
 
-    var categoryTime = $scope.selectedCategory.item.firstElementChild.firstElementChild.lastElementChild;
+    // console.log(mockData);
 
-    console.log($scope.selectedCategory.item.lastElementChild);
+    // var categoryTime = $scope.selectedCategory.item.firstElementChild.firstElementChild.lastElementChild;
 
-    updateCategoryTimeHelper(categoryTime.textContent, newTask.time);
-    var categoryTimeInMins = getTimeInMins(categoryTime.textContent);
-    updateTasksSlidersHelper(newTask, uniqueId, categoryTimeInMins);
+    // console.log($scope.selectedCategory.item.lastElementChild);
+
+    // updateCategoryTimeHelper(categoryTime.textContent, newTask.time);
+    // var categoryTimeInMins = getTimeInMins(categoryTime.textContent);
+    // updateTasksSlidersHelper(newTask, uniqueId, categoryTimeInMins);
 
     // use data instead of jquery
     // include id in data
