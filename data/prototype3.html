@@ -98,7 +98,11 @@
     #delete-category-state {
       padding: 0;
     }
-
+    
+    .time-input {
+      width: 34px;
+      padding: 0;
+    }
     </style>
 </head>
 <body ng-app="sunDialApp" ng-controller="panelController">
@@ -183,7 +187,7 @@
         <a class="btn btn-default btn-sm" ng-click="displayPanel('default')">
           <span class="fa fa-times-circle"></span> Cancel
         </a>
-        <a class="btn btn-default btn-sm" ng-click="displayCreateTaskTitle=false; displayCreateTaskTime=true;">
+        <a class="btn btn-default btn-sm" ng-click="goToTaskTimeView(newTaskTitle)">
           <span class="fa fa-arrow-circle-right"></span> Next
         </a>
       </div>
@@ -191,25 +195,27 @@
 
     <div ng-show="displayCreateTaskTime" style="width:100%;">
       <label for="task-title">Time:</label>
-      <input name="task-title" type="text" style="width:35px;" ng-model="newTaskTimeD"> d
-      <input name="task-title" type="text" style="width:35px;" ng-model="newTaskTimeH"> h
-      <input name="task-title" type="text" style="width:35px;" ng-model="newTaskTimeM"> m
+      <input class="time-input" maxlength="2" name="task-title" type="text" ng-model="newTaskTime.d"> d
+      <input class="time-input" maxlength="2" name="task-title" type="text" ng-model="newTaskTime.h"> h
+      <input class="time-input" maxlength="2" name="task-title" type="text" ng-model="newTaskTime.m"> m
     
       <div style="float:right; margin-right:12px; margin-top:2px;">
-        <a class="btn btn-default btn-sm" ng-click="displayPanel('default')">
-          <span class="fa fa-times-circle"></span> Cancel
+        <a class="btn btn-default btn-sm" ng-click="displayCreateTaskTitle=true; displayCreateTaskTime=false;">
+          <span class="fa fa-arrow-circle-left"></span> Back
         </a>
-        <a class="btn btn-default btn-sm" ng-click="createTask()">
+        <a class="btn btn-default btn-sm" ng-click="createTask(newTaskTitle, newTaskTime)">
           <span class="fa fa-arrow-circle-right"></span> Create
         </a>
       </div>
     </div>
   </div>
 
-  <div class="state" id="edit-task-state" ng-if="editTaskState">
+  <div class="state" id="edit-task-state" ng-show="editTaskState">
+    <span>edit state</span>
   </div>
 
   <div class="state" id="delete-task-state" ng-show="deleteTaskState">
+    <span>delete state</span>
   </div>
 </div>
 

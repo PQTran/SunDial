@@ -95,18 +95,18 @@ app.controller('panelController', [ '$scope', function($scope) {
       select: function (e) {
         var item = e.target.parentElement;
         var title = e.target.firstElementChild.firstElementChild;
-        var titleText = title.innerText;
+        var titleText = title.textContent;
 
         $scope.selectedCategory = { item: item, title: title, titleText: titleText };
         $scope.panelBar.expand($scope.selectedCategory.item);
 
-        if (e.item.innerText == 'Add Task') {
+        if (e.item.textContent == 'Add Task') {
           $scope.displayPanel('create-task');
         }
-        if (e.item.innerText == 'Edit') {
+        if (e.item.textContent == 'Edit') {
           $scope.displayPanel('edit-category');
         }
-        if (e.item.innerText == 'Delete') {
+        if (e.item.textContent == 'Delete') {
           $scope.displayPanel('delete-category');
         }
         $scope.$apply();
@@ -120,6 +120,23 @@ app.controller('panelController', [ '$scope', function($scope) {
       alignToAnchor: true,
       open: function () {
         $scope.categoryContextMenu.close();
+      },
+      select: function (e) {
+        var category = e.target.parentElement.parentElement.firstElementChild.firstElementChild.firstElementChild;
+        var titleText = e.target.firstElementChild.firstElementChild.firstElementChild.textContent.substring(2);
+
+        $scope.selectedTask = { categoryText: category.textContent, titleText: titleText };
+
+        console.log("category", category);
+        console.log("titleText", titleText);
+
+        if (e.item.textContent == 'Edit') {
+          $scope.displayPanel('edit-task');
+        }
+        if (e.item.textContent == 'Delete') {
+          $scope.displayPanel('delete-task');
+        }
+        $scope.$apply();
       }
     };
 
@@ -153,8 +170,8 @@ app.controller('panelController', [ '$scope', function($scope) {
   }
 
   function notificationShow(message, type) {
-    if ($(".k-animation-container").length == 1) {
-      $(".k-animation-container").remove();
+    if ($(".k-notification").length >= 1) {
+      $(".k-notification").parent().remove();
     }
 
     $scope.notification.show({ Message: message }, type);
@@ -176,26 +193,32 @@ app.controller('panelController', [ '$scope', function($scope) {
     return "c" + categoryIndex.toString() + "t" + taskIndex.toString();
   }
 
-  function displayTaskPanelBarHelper(task, uniqueId, categoryIndex) {
-      var taskTemplate = kendo.template($("#task-template").html());
-      var taskTemplateData = { TaskTitle: task.title, TaskTime: task.time, SliderId: "slider_" + uniqueId, Id: uniqueId };
-      var resultTaskHtml = taskTemplate(taskTemplateData);
+  function taskPanelBarHelper(task, uniqueId) {
+    var sliderId = "slider_" + uniqueId;
+
+    var taskTemplate = kendo.template($("#task-template").html());
+    var taskTemplateData = { TaskTitle: task.title, TaskTime: task.time, SliderId: sliderId, Id: uniqueId };
+    var resultTaskHtml = taskTemplate(taskTemplateData);
       
-      var resultTaskItem = { text: resultTaskHtml, encoded: false };
-      
-      $scope.panelBar.append(resultTaskItem, $(".k-panelbar > .k-item").eq(categoryIndex));
+    var resultTaskItem = { text: resultTaskHtml, encoded: false };
+    return resultTaskItem;
   }
 
   function displayTaskSliderHelper(task, uniqueId, categoryTotalTime) {
+    var sliderId = "slider_" + uniqueId;
+    
+    console.log(task.time);
+
     var taskTime = getTimeInMins(task.time);
     var taskPercentage = taskTime / categoryTotalTime * 100;       
-
+    console.log(taskTime);
     var taskSlider = new kendo.View(
       "slider-template",
       { model: { Value: taskPercentage }, evalTemplate: true }
     );
-
-    taskSlider.render("#" + "slider_" + uniqueId);
+    
+    console.log(taskPercentage);
+    taskSlider.render("#" + sliderId);
   }
 
   function displayTasks(tasks, categoryIndex, categoryTotalTime) {
@@ -203,7 +226,9 @@ app.controller('panelController', [ '$scope', function($scope) {
       var uniqueId = createUniqueId(categoryIndex, i);
       var task = tasks[i];
 
-      displayTaskPanelBarHelper(task, uniqueId, categoryIndex);
+      var resultTaskItem = taskPanelBarHelper(task, uniqueId);
+      $scope.panelBar.append(resultTaskItem, $(".k-panelbar > .k-item").eq(categoryIndex));
+      
       displayTaskSliderHelper(task, uniqueId, categoryTotalTime);
     }
   }
@@ -232,46 +257,98 @@ app.controller('panelController', [ '$scope', function($scope) {
     return result;
   }
 
+  function getTimeInMinsInverse(timeInMins) {
+    var remainingTime = timeInMins;
+    var tempTime = {};
+
+    if (remainingTime / 60 / 24 > 1) {
+      tempTime.d = Math.floor(remainingTime / 60 / 24);
+      remainingTime = remainingTime % (60 * 24);
+    }
+    if (remainingTime / 60 > 1) {
+      tempTime.h = Math.floor(remainingTime / 60);
+      remainingTime = remainingTime % 60;
+    }
+    if (remainingTime > 1) {
+      tempTime.m = remainingTime;
+    }
+
+    var resultTimeStr = timeObjToText(tempTime);
+
+    return resultTimeStr;
+  }
+
   function setStateHelper(defaultState, 
                           createCategoryState,
                           editCategoryState,
                           deleteCategoryState,
-                          createTaskState) {
+                          createTaskState,
+                          editTaskState,
+                          deleteTaskState) {
     $scope.defaultState = defaultState;
     $scope.createCategoryState = createCategoryState;
     $scope.editCategoryState = editCategoryState;
     $scope.deleteCategoryState = deleteCategoryState;
     $scope.createTaskState = createTaskState;
+    $scope.editTaskState = editTaskState;
+    $scope.deleteTaskState = deleteTaskState;
   }
 
   $scope.displayPanel = function (panel) {
     if (panel == 'default') {
-      setStateHelper(true, false, false, false, false);
+      setStateHelper(true, false, false, false, false, false, false);
     }
     if (panel == 'create-category') {
       $scope.newCategoryTitle = "";
 
-      setStateHelper(false, true, false, false, false);
+      setStateHelper(false, true, false, false, false, false, false);
     }
     if (panel == 'edit-category') {
       $scope.newCategoryTitle = $scope.selectedCategory.titleText;
 
-      setStateHelper(false, false, true, false, false);
+      setStateHelper(false, false, true, false, false, false, false);
     }
     if (panel == 'delete-category') {
-      setStateHelper(false, false, false, true, false);
+      setStateHelper(false, false, false, true, false, false, false);
     }
     if (panel == 'create-task') {
       $scope.displayCreateTaskTitle = true;
+      $scope.displayCreateTaskTime = false;
 
-      setStateHelper(false, false, false, false, true);
+      $scope.newTaskTitle = "";
+      $scope.newTaskTime = {};
+
+      setStateHelper(false, false, false, false, true, false, false);
+    }
+    if (panel == 'edit-task') {
+      $scope.displayEditTaskTitle = true;
+
+      setStateHelper(false, false, false, false, false, true, false);
+    }
+    if (panel == 'delete-task') {
+      setStateHelper(false, false, false, false, false, false, true);
     }
   };
 
 
   function validateCategoryTitle(categoryTitle) {
-    var isValid = true;
-    isValid = isValid && categoryTitle != "";
+    var passEmptyStrTest;
+    if (categoryTitle == null && categoryTitle == "") {
+      passEmptyStrTest = false;
+    }
+    else {
+      passEmptyStrTest = true;
+    }
+
+    var passUniquenessTest = true;
+
+    for (var i = 0; i < mockData.length; i++) {
+      if (mockData[i].title == categoryTitle) {
+        passUniquenessTest = false;
+      }
+    }
+
+    var isValid = passEmptyStrTest && passUniquenessTest;
     return isValid;
   }
 
@@ -338,52 +415,161 @@ app.controller('panelController', [ '$scope', function($scope) {
     console.log(mockData);
   }
 
+  function taskTitleUniquenessHelper(taskTitle, listOfTasks) {
+    var passUniquenessTest = true;
+    for (var i = 0; i < listOfTasks.length; i++) {
+
+      // console.log(listOfTasks[i].title, taskTitle);
+      if (listOfTasks[i].title == taskTitle) {
+        passUniquenessTest = false;
+      }
+    }
+
+
+    // console.log(passUniquenessTest);
+    return passUniquenessTest;
+  }
+
+  function taskTitleValidate(taskTitle) {
+    var passEmptyStrTest;
+    if (taskTitle == null || taskTitle == "") {
+      passEmptyStrTest = false;
+    }
+    else {
+      passEmptyStrTest = true;
+    }
+
+    var passUniquenessWrtCategoryTest = false;
+
+    for (var i = 0; i < mockData.length; i++) {
+      if (mockData[i].title == $scope.selectedCategory.titleText) {
+        passUniquenessWrtCategoryTest = taskTitleUniquenessHelper(taskTitle, mockData[i].entries);
+      }
+    }
+
+    var isValid = passEmptyStrTest && passUniquenessWrtCategoryTest;
+    return isValid;
+  }
+
+  $scope.goToTaskTimeView = function (newTaskTitle) {
+    if (taskTitleValidate(newTaskTitle)) {
+      $scope.displayCreateTaskTitle = false; 
+      $scope.displayCreateTaskTime = true;
+    }
+    else {
+      notificationShow('Please provide a valid task title', 'custom-error');
+    }
+
+  }
+
+  function timeObjToText(newTaskTime) {
+    var taskTimeText = "";
+
+    if (newTaskTime.d) {
+      taskTimeText += newTaskTime.d + "d ";
+    }
+    if (newTaskTime.h) {
+      taskTimeText += newTaskTime.h + "h ";
+    }
+    if (newTaskTime.m) {
+      taskTimeText += newTaskTime.m + "m ";
+    }
+    taskTimeText = taskTimeText.substring(0, taskTimeText.length - 1);
+    
+    return taskTimeText;
+  }
+
   function increment_last(v) {
     return v.replace(/[0-9]+(?!.*[0-9])/, parseInt(v.match(/[0-9]+(?!.*[0-9])/), 10)+1);
   }
 
-  $scope.createTask = function () {
-    var taskTimeText = "";
-    if ($scope.newTaskTimeD) {
-      taskTimeText += $scope.newTaskTimeD + "d ";
+  function getUniqueIdByLastTaskItemHelper(lastTaskItem) {
+    var tempBaseStr = $(lastTaskItem).find('.task-time-slider')[0].id;
+    var newBaseId = increment_last(tempBaseStr);
+    
+    var resultUniqueId = newBaseId.substring(7);
+    return resultUniqueId;
+  }
+
+  function updateCategoryTimeHelper(categoryTimeText, timeTextToAdd) {
+    var categoryTimeInMins = getTimeInMins(categoryTimeText);
+    var timeTextInMins = getTimeInMins(timeTextToAdd);
+
+    var resultCategoryTimeText = getTimeInMinsInverse(categoryTimeInMins + timeTextInMins);
+
+    for (var i = 0; i < mockData.length; i++) {
+      if (mockData[i].title == $scope.selectedCategory.titleText) {
+        mockData[i].time = resultCategoryTimeText;
+      }
     }
-    if ($scope.newTaskTimeH) {
-      taskTimeText += $scope.newTaskTimeH + "h ";
+
+    $scope.selectedCategory.item.firstElementChild.firstElementChild.lastElementChild.textContent =
+      resultCategoryTimeText;
+  }
+
+  function updateTasksSlidersHelper(newTask, uniqueId, categoryTotalTime) {
+    displayTaskSliderHelper(newTask, uniqueId, categoryTotalTime);
+  }
+
+  $scope.createTask = function (newTaskTitle, newTaskTime) {
+    var lastTaskItemWrtCategory = $scope.selectedCategory.item.lastElementChild.lastElementChild;
+    var uniqueId = getUniqueIdByLastTaskItemHelper(lastTaskItemWrtCategory);
+
+    var newTaskTimeText = timeObjToText(newTaskTime);
+
+    var newTask = { title: newTaskTitle, time: newTaskTimeText };
+    
+    var resultTaskItem = taskPanelBarHelper(newTask, uniqueId);
+    $scope.panelBar.insertAfter(resultTaskItem, lastTaskItemWrtCategory);
+
+    for (var i = 0; i < mockData.length; i++) {
+      if (mockData[i].title == $scope.selectedCategory.titleText) {
+        mockData[i].entries.push(newTask);
+      }
     }
-    if ($scope.newTaskTimeM) {
-      taskTimeText += $scope.newTaskTimeM + "m ";
-    }
-    taskTimeText = taskTimeText.substring(0, taskTimeText.length - 1);
 
-    var tempBaseStr = $($scope.selectedCategory.item.nextElementSibling.lastElementChild).find('.task-time-slider')[0].id;
-   
-    var baseId = increment_last(tempBaseStr);
-      
-    console.log(baseId);
+    console.log(mockData);
 
-    var taskTemplate = kendo.template($("#task-template").html());
-    var taskTemplateData = { TaskTitle: $scope.newTaskTitle, TaskTime: taskTimeText, SliderId: baseId };
-    var resultTaskHtml = taskTemplate(taskTemplateData);
-    var resultTaskItem = [{ text: resultTaskHtml, encoded: false }];
+    var categoryTime = $scope.selectedCategory.item.firstElementChild.firstElementChild.lastElementChild;
+
+    console.log($scope.selectedCategory.item.lastElementChild);
+
+    updateCategoryTimeHelper(categoryTime.textContent, newTask.time);
+    var categoryTimeInMins = getTimeInMins(categoryTime.textContent);
+    updateTasksSlidersHelper(newTask, uniqueId, categoryTimeInMins);
+
+    // use data instead of jquery
+    // include id in data
+
+    // var slider = $("#slider_c0t0").data("kendoSlider");
+    // slider.value(100);
+  
+    // var categoryTotalTime = getTimeInMins($scope.selectedCategory.item.children["category-time"].textContent);
+    // var taskTime = getTimeInMins(taskTimeText);
+
+    // var taskPercentage = taskTime / categoryTotalTime * 100;
     
-    
+    // var entrySlider = new kendo.View(
+      // "slider-template",
+      // { model: { Value: taskPercentage }, evalTemplate: true }
+    // );
 
-    $scope.panelBar.insertAfter(resultTaskItem, $scope.selectedCategory.item.nextElementSibling.lastElementChild);
-
-    
-    var categoryTotalTime = getTimeInMins($scope.selectedCategory.item.children["category-time"].innerText);
-    var taskTime = getTimeInMins(taskTimeText);
-
-    var taskPercentage = taskTime / categoryTotalTime * 100;
-    
-    var entrySlider = new kendo.View(
-      "slider-template",
-      { model: { Value: taskPercentage }, evalTemplate: true }
-    );
-
-    entrySlider.render( "#" + baseId );  
+    // entrySlider.render( "#" + baseId );  
 
   }
+
+    // var sliderId = "slider_" + uniqueId;
+
+    // var taskTime = getTimeInMins(task.time);
+    // var taskPercentage = taskTime / categoryTotalTime * 100;       
+
+    // var taskSlider = new kendo.View(
+      // "slider-template",
+      // { model: { Value: taskPercentage }, evalTemplate: true }
+    // );
+
+    // taskSlider.render("#" + sliderId);
+
 
   $scope.openCreditPage = function () {
     self.port.emit('openCreditPage', '');
